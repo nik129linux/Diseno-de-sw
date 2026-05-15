@@ -8,7 +8,7 @@ import Login from './pages/Login';
 import Chat from './pages/Chat';
 
 const Dashboard = () => <div className="p-8 text-white bg-[#001f3f] min-h-screen">Admin Dashboard coming soon...</div>;
-const Audit = () => <div className="p-8 text-white bg-[#001f3f] min-h-screen">Audit Panel coming soon...</div>;
+import AuditPage from './pages/Audit';
 const Policies = () => <div className="p-8 text-white bg-[#001f3f] min-h-screen">Policy Config coming soon...</div>;
 const Forbidden = () => <div className="p-8 text-white bg-[#001f3f] min-h-screen">403 - Forbidden: You do not have access to this page.</div>;
 
@@ -41,7 +41,7 @@ function App() {
             path="/audit" 
             element={
               <ProtectedRoute allowedRoles={['ROLE_ADMIN']}>
-                <Audit />
+                <AuditPage />
               </ProtectedRoute>
             } 
           />
