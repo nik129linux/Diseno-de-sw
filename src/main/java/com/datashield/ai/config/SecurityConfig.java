@@ -76,8 +76,8 @@ public class SecurityConfig {
                 .requestMatchers("/api/v1/health").permitAll()
                 .requestMatchers("/actuator/**").permitAll()
                 
-                // Employee endpoints
-                .requestMatchers(HttpMethod.POST, "/api/v1/prompt").hasRole("EMPLOYEE")
+                // Prompt endpoint — both employees and admins can chat
+                .requestMatchers(HttpMethod.POST, "/api/v1/prompt").hasAnyRole("EMPLOYEE", "ADMIN")
                 
                 // Admin endpoints
                 .requestMatchers("/api/v1/audit/**").hasRole("ADMIN")
