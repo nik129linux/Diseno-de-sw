@@ -1,7 +1,12 @@
 import apiClient from './apiClient';
 
 export const adminApi = {
+  getStats: async () => {
+    const response = await apiClient.get('/audit/stats');
+    return response.data;
+  },
   getAuditLogs: async (params: any) => {
+
     const response = await apiClient.get('/audit', { params });
     return response.data;
   },
