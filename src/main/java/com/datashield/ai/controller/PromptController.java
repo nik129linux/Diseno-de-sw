@@ -2,6 +2,7 @@ package com.datashield.ai.controller;
 
 import com.datashield.ai.dto.PromptRequest;
 import com.datashield.ai.dto.PromptResponse;
+import com.datashield.ai.integration.LlmService;
 import com.datashield.ai.model.Interaction;
 import com.datashield.ai.model.Policy;
 import com.datashield.ai.repository.InteractionRepository;
@@ -38,6 +39,7 @@ public class PromptController {
     private final SanitizationService sanitizationService;
     private final PolicyRepository policyRepository;
     private final InteractionRepository interactionRepository;
+    private final LlmService llmService;
 
     /**
      * Submit prompt for sanitization and LLM processing
@@ -98,9 +100,7 @@ public class PromptController {
      */
     @CircuitBreaker(name = "llmService", fallbackMethod = "llmFallback")
     public String callLLMWithCircuitBreaker(String sanitizedPrompt) {
-        // TODO: Implement actual LLM integration (OpenAI, etc.)
-        // For now, return mock response
-        return "Mock LLM response for: " + sanitizedPrompt.substring(0, Math.min(50, sanitizedPrompt.length()));
+        return llmService.generateCompletion(sanitizedPrompt);
     }
 
     /**
