@@ -23,7 +23,7 @@ echo "       MongoDB ready."
 # ── Start Backend (on host, connects to Ollama at localhost:11434) ─────────────
 echo "[3/4] Starting Spring Boot backend..."
 cd "$PROJECT_DIR"
-export SPRING_DATA_MONGODB_URI="mongodb://admin:secure_password_123@localhost:27017/datashield?authSource=admin"
+export MONGODB_URI="mongodb://admin:secure_password_123@localhost:27017/datashield?authSource=admin"
 export LLM_PROVIDER=ollama
 export OLLAMA_MODEL=gemma4:31b-cloud
 export OLLAMA_BASE_URL=http://localhost:11434/v1

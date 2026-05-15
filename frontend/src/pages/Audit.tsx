@@ -1,6 +1,6 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import { adminApi } from '../api/adminApi';
-import { FileText, Calendar, Search, Download } from 'lucide-react';
+import { FileText, Calendar, Search, Download, RefreshCw } from 'lucide-react';
 
 interface AuditLog {
   id: string;
@@ -25,16 +25,17 @@ const Audit: React.FC = () => {
 
   useEffect(() => { fetchLogs(); }, [page, filters]);
 
-  const fetchLogs = async () => {
+  const fetchLogs = useCallback(async () => {
     setLoading(true);
     try {
-      const data = await adminApi.getAuditLogs({ page, ...filters });
+      // Backend uses 0-based page index
+      const data = await adminApi.getAuditLogs({ page: page - 1, size: 20, ...filters });
       setLogs(data.content || []);
       setTotalPages(data.totalPages || 1);
     } finally {
       setLoading(false);
     }
-  };
+  }, [page, filters]);
 
   const handleFilterChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFilters({ ...filters, [e.target.name]: e.target.value });
@@ -49,13 +50,22 @@ const Audit: React.FC = () => {
             <h1 className="text-2xl font-bold text-foreground tracking-tight">Audit Panel</h1>
             <p className="text-muted-foreground text-sm mt-1">Complete interaction history and security events</p>
           </div>
-          <button
-            onClick={() => window.print()}
-            className="flex items-center gap-2 h-9 bg-primary hover:bg-primary/90 text-primary-foreground px-4 rounded-lg text-sm font-medium transition-colors"
-          >
-            <Download size={15} />
-            Export PDF
-          </button>
+          <div className="flex gap-2">
+            <button
+              onClick={() => fetchLogs()}
+              className="flex items-center gap-2 h-9 border border-border hover:bg-secondary text-foreground px-4 rounded-lg text-sm font-medium transition-colors"
+            >
+              <RefreshCw size={15} />
+              Refresh
+            </button>
+            <button
+              onClick={() => window.print()}
+              className="flex items-center gap-2 h-9 bg-primary hover:bg-primary/90 text-primary-foreground px-4 rounded-lg text-sm font-medium transition-colors"
+            >
+              <Download size={15} />
+              Export PDF
+            </button>
+          </div>
         </div>
 
         {/* Filters */}
