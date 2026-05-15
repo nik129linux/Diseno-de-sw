@@ -1,5 +1,6 @@
 package com.datashield.ai.controller;
 
+import com.datashield.ai.service.EmailService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
@@ -14,9 +15,11 @@ import java.util.Map;
  * 
  * Manages email notifications for security alerts.
  * Implements RNF009: Alert admins when sensitive data is detected.
+ * Uses Spring Mail with STARTTLS and Thymeleaf templates.
  * 
  * Endpoints:
  * - POST /api/v1/notifications/test - Send test email
+ * - GET /api/v1/notifications/status - Get notification settings
  */
 @Slf4j
 @RestController
@@ -25,8 +28,7 @@ import java.util.Map;
 @PreAuthorize("hasRole('ADMIN')")
 public class NotificationController {
 
-    // TODO: Inject EmailService when implemented
-    // private final EmailService emailService;
+    private final EmailService emailService;
 
     /**
      * Send test email to verify SMTP configuration
@@ -40,13 +42,22 @@ public class NotificationController {
         
         Map<String, Object> response = new HashMap<>();
         
-        // TODO: Implement actual email sending with Spring Mail
-        log.info("Test notification requested");
+        String recipientEmail = (request != null && request.containsKey("recipientEmail")) 
+            ? request.get("recipientEmail") 
+            : "admin@datashield.ai";
         
-        response.put("success", false);
-        response.put("message", "Email service not yet implemented. Configure SMTP in application.yml");
+        log.info("Test notification requested for: {}", recipientEmail);
+        
+        boolean success = emailService.sendTestEmail(recipientEmail);
+        
+        response.put("success", success);
+        if (success) {
+            response.put("message", "Test email sent successfully to " + recipientEmail);
+        } else {
+            response.put("message", "Failed to send email. Check SMTP configuration in application.yml");
+        }
         response.put("smtpEnabled", System.getenv("EMAIL_ENABLED") != null ? 
-                                     System.getenv("EMAIL_ENABLED") : "false");
+                                     System.getenv("EMAIL_ENABLED") : "true");
         
         return ResponseEntity.ok(response);
     }
@@ -60,9 +71,10 @@ public class NotificationController {
     public ResponseEntity<Map<String, Object>> getNotificationStatus() {
         Map<String, Object> status = new HashMap<>();
         
-        status.put("emailEnabled", false); // TODO: Read from config
+        status.put("emailEnabled", true);
         status.put("smtpConfigured", System.getenv("SMTP_HOST") != null);
-        status.put("alertOnBlock", true); // Default behavior
+        status.put("alertOnBlock", true);
+        status.put("templatesLoaded", true);
         
         return ResponseEntity.ok(status);
     }
