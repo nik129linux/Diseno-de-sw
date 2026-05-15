@@ -1,0 +1,18 @@
+# Entorno local
+.env
+*.log
+target/
+!.mvn/wrapper/maven-wrapper.jar
+
+# IDE
+.idea/
+.vscode/
+*.iml
+
+# Docker/Dev Container (no commitear configs locales)
+!docker-compose.yml
+!.devcontainer/
+
+# OS
+.DS_Store
+Thumbs.db

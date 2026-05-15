@@ -1,0 +1,28 @@
+{
+  "name": "DataShield AI Dev",
+  "dockerComposeFile": "../docker-compose.yml",
+  "service": "app",
+  "workspaceFolder": "/workspace",
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "vscjava.vscode-java-pack",
+        "vmware.vscode-boot-dev-pack",
+        "mongodb.mongodb-vscode",
+        "ms-azuretools.vscode-docker"
+      ],
+      "settings": {
+        "java.configuration.runtimes": [
+          {
+            "name": "JavaSE-17",
+            "path": "/usr/lib/jvm/java-17-openjdk-amd64",
+            "default": true
+          }
+        ]
+      }
+    }
+  },
+  "forwardPorts": [8080, 27017, 8081],
+  "postCreateCommand": "./mvnw -B verify",
+  "remoteUser": "vscode"
+}
