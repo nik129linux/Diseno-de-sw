@@ -9,7 +9,8 @@ import Chat from './pages/Chat';
 
 const Dashboard = () => <div className="p-8 text-white bg-[#001f3f] min-h-screen">Admin Dashboard coming soon...</div>;
 import AuditPage from './pages/Audit';
-const Policies = () => <div className="p-8 text-white bg-[#001f3f] min-h-screen">Policy Config coming soon...</div>;
+import PoliciesPage from './pages/Policies';
+
 const Forbidden = () => <div className="p-8 text-white bg-[#001f3f] min-h-screen">403 - Forbidden: You do not have access to this page.</div>;
 
 function App() {
@@ -46,14 +47,14 @@ function App() {
             } 
           />
           
-          <Route 
-            path="/policies" 
-            element={
-              <ProtectedRoute allowedRoles={['ROLE_ADMIN']}>
-                <Policies />
-              </ProtectedRoute>
-            } 
-          />
+<Route 
+  path="/policies" 
+  element={
+    <ProtectedRoute allowedRoles={['ROLE_ADMIN']}>
+      <PoliciesPage />
+    </ProtectedRoute>
+  } 
+/>
 
           <Route path="/403" element={<Forbidden />} />
           <Route path="/" element={<Navigate to="/chat" replace />} />
