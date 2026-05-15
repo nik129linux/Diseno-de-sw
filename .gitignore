@@ -16,7 +16,7 @@ target/
 # Environment
 .env
 .env.local
-*.env.*
+*.env
 
 # Editors
 .vscode/
