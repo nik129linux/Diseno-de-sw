@@ -84,6 +84,10 @@ public class SanitizationService {
                     continue;
                 }
 
+                if (regexPattern.getPattern() == null || regexPattern.getPattern().isBlank()) {
+                    continue;
+                }
+
                 // Get or compile pattern from cache
                 String cacheKey = policy.getId() + "_" + regexPattern.getName();
                 Pattern compiledPattern = patternCache.get(cacheKey, k -> 
