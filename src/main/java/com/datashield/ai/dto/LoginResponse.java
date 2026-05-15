@@ -3,9 +3,6 @@ package com.datashield.ai.dto;
 import lombok.Builder;
 import lombok.Data;
 
-/**
- * Authentication Response DTO
- */
 @Data
 @Builder
 public class LoginResponse {
@@ -14,4 +11,13 @@ public class LoginResponse {
     private String refreshToken;
     private String tokenType;
     private Long expiresIn;
+    private UserInfo user;
+
+    @Data
+    @Builder
+    public static class UserInfo {
+        private String id;
+        private String email;
+        private String role;
+    }
 }

@@ -76,11 +76,11 @@ rate-limiting:
 
 # LLM Provider Configuration
 llm:
-  provider: ${LLM_PROVIDER:mock}  # mock, openai
-  openai:
-    api-key: ${OPENAI_API_KEY:}
-    base-url: https://api.openai.com/v1
-    model: gpt-3.5-turbo
+  provider: ${LLM_PROVIDER:nvidia}  # mock, nvidia
+  nvidia:
+    api-key: ${NVIDIA_API_KEY:}
+    base-url: https://integrate.api.nvidia.com/v1
+    model: meta/llama-3.1-8b-instruct
     timeout: 30000
 
 # Email Notifications
