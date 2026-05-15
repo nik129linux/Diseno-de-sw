@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { authApi } from '../api/authApi';
+import { Shield, AlertCircle } from 'lucide-react';
 
 const Login: React.FC = () => {
   const [email, setEmail] = useState('');
@@ -16,18 +17,10 @@ const Login: React.FC = () => {
     e.preventDefault();
     setError('');
     setIsLoading(true);
-
     try {
       const data = await authApi.login({ email, password });
-      
-      // Expected response: { user: { id, email, role }, accessToken, refreshToken }
       login(data.user, data.accessToken, data.refreshToken);
-
-      if (data.user.role === 'ROLE_ADMIN') {
-        navigate('/dashboard');
-      } else {
-        navigate('/chat');
-      }
+      navigate(data.user.role === 'ROLE_ADMIN' ? '/dashboard' : '/chat');
     } catch (err: any) {
       setError(err.response?.data?.message || 'Invalid email or password');
     } finally {
@@ -36,57 +29,71 @@ const Login: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-[#001f3f] text-white px-4">
-      <div className="w-full max-w-md p-8 bg-[#003366] rounded-xl shadow-2xl border border-blue-500/30">
+    <div className="min-h-screen flex items-center justify-center px-4">
+      <div className="w-full max-w-md">
+        {/* Brand */}
         <div className="text-center mb-8">
-          <h1 className="text-3xl font-bold mb-2">DataShield AI</h1>
-          <p className="text-blue-200">Secure LLM Middleware Access</p>
+          <div className="inline-flex items-center justify-center w-12 h-12 rounded-xl bg-primary mb-4">
+            <Shield size={22} className="text-primary-foreground" />
+          </div>
+          <h1 className="text-2xl font-bold text-foreground tracking-tight">DataShield AI</h1>
+          <p className="text-muted-foreground text-sm mt-1">Secure LLM middleware access</p>
         </div>
 
-        <form onSubmit={handleSubmit} className="space-y-6">
-          <div>
-            <label htmlFor="email" className="block text-sm font-medium mb-2">Email Address</label>
+        {/* Card */}
+        <div className="bg-card border border-border rounded-xl shadow-sm p-8">
+          <h2 className="text-lg font-semibold text-card-foreground mb-6">Sign in to your account</h2>
+
+          <form onSubmit={handleSubmit} className="space-y-4">
+            <div>
+              <label htmlFor="email" className="block text-sm font-medium text-foreground mb-1.5">
+                Email address
+              </label>
               <input
                 id="email"
                 type="email"
                 required
-                className="w-full px-4 py-2 rounded-lg bg-[#001f3f] border border-blue-400/30 text-white placeholder-blue-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 transition-all"
-                placeholder="name@company.com…"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                spellCheck={false}
+                placeholder="name@company.com"
                 autoComplete="email"
+                spellCheck={false}
+                className="w-full h-9 px-3 rounded-md border border-border bg-input text-foreground placeholder:text-muted-foreground text-sm outline-none focus-visible:ring-2 focus-visible:ring-ring transition-shadow"
               />
-          </div>
+            </div>
 
-          <div>
-            <label htmlFor="password" className="block text-sm font-medium mb-2">Password</label>
+            <div>
+              <label htmlFor="password" className="block text-sm font-medium text-foreground mb-1.5">
+                Password
+              </label>
               <input
                 id="password"
                 type="password"
                 required
-                className="w-full px-4 py-2 rounded-lg bg-[#001f3f] border border-blue-400/30 text-white placeholder-blue-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 transition-all"
-                placeholder="••••••••"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
+                placeholder="••••••••"
                 autoComplete="current-password"
+                className="w-full h-9 px-3 rounded-md border border-border bg-input text-foreground placeholder:text-muted-foreground text-sm outline-none focus-visible:ring-2 focus-visible:ring-ring transition-shadow"
               />
-          </div>
-
-          {error && (
-            <div className="p-3 text-sm text-red-200 bg-red-900/50 border border-red-500 rounded-lg">
-              {error}
             </div>
-          )}
 
-           <button
-             type="submit"
-             disabled={isLoading}
-             className="w-full py-3 px-4 bg-blue-600 hover:bg-blue-500 disabled:bg-blue-800 text-white font-semibold rounded-lg transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-400"
-           >
-             {isLoading ? 'Authenticating…' : 'Sign In'}
-           </button>
-        </form>
+            {error && (
+              <div className="flex items-start gap-2 p-3 rounded-lg bg-destructive/10 border border-destructive/20 text-destructive text-sm">
+                <AlertCircle size={15} className="mt-0.5 flex-shrink-0" />
+                {error}
+              </div>
+            )}
+
+            <button
+              type="submit"
+              disabled={isLoading}
+              className="w-full h-9 bg-primary hover:bg-primary/90 disabled:opacity-50 text-primary-foreground font-medium rounded-md text-sm transition-colors glow-accent"
+            >
+              {isLoading ? 'Signing in…' : 'Sign in'}
+            </button>
+          </form>
+        </div>
       </div>
     </div>
   );

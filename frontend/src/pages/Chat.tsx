@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Send, Loader2, ShieldAlert, ShieldCheck, MessageSquare } from 'lucide-react';
+import { Send, Loader2, ShieldAlert, ShieldCheck, MessageSquare, AlertCircle } from 'lucide-react';
 import { promptApi } from '../api/promptApi';
 
 interface PromptResponse {
@@ -31,93 +31,86 @@ const Chat: React.FC = () => {
   };
 
   return (
-    <div className="flex h-screen bg-[#001f3f] text-white overflow-hidden">
-      {/* Input Pane */}
-      <div className="w-1/2 h-full border-r border-blue-900 flex flex-col p-6 space-y-4">
-        <div className="flex items-center space-x-2 mb-4">
-          <MessageSquare className="text-blue-400" />
-          <h2 className="text-xl font-semibold">Prompt Input</h2>
+    <div className="flex h-full bg-background overflow-hidden">
+      {/* Input pane */}
+      <div className="w-1/2 h-full border-r border-border flex flex-col p-6 gap-4">
+        <div className="flex items-center gap-2">
+          <MessageSquare size={18} className="text-accent" />
+          <h2 className="text-base font-semibold text-foreground">Prompt Input</h2>
         </div>
-        
-         <textarea
-           id="chat-prompt"
-           aria-label="Enter your prompt"
-           className="flex-1 w-full p-4 bg-[#002b55] border border-blue-700 rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 text-white resize-none"
-           placeholder="Enter your prompt here…"
-           value={input}
-           onChange={(e) => setInput(e.target.value)}
-           onKeyDown={(e) => {
-             if (e.key === 'Enter' && !e.shiftKey) {
-               e.preventDefault();
-               handleSend();
-             }
-           }}
-         />
-        
-         <button
-           onClick={handleSend}
-           disabled={isLoading || !input.trim()}
-           className="flex items-center justify-center space-x-2 bg-blue-600 hover:bg-blue-500 disabled:bg-blue-800 disabled:cursor-not-allowed text-white px-6 py-3 rounded-lg font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-400"
-         >
-           {isLoading ? <Loader2 className="animate-spin w-5 h-5" /> : <Send className="w-5 h-5" />}
-           <span>{isLoading ? 'Processing…' : 'Send Prompt'}</span>
-         </button>
+
+        <textarea
+          id="chat-prompt"
+          aria-label="Enter your prompt"
+          value={input}
+          onChange={(e) => setInput(e.target.value)}
+          onKeyDown={(e) => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); handleSend(); } }}
+          placeholder="Enter your prompt here… (Enter to send, Shift+Enter for new line)"
+          className="flex-1 w-full p-3 rounded-lg border border-border bg-card text-foreground placeholder:text-muted-foreground text-sm font-mono resize-none outline-none focus-visible:ring-2 focus-visible:ring-ring transition-shadow"
+        />
+
+        <button
+          onClick={handleSend}
+          disabled={isLoading || !input.trim()}
+          className="flex items-center justify-center gap-2 h-9 bg-primary hover:bg-primary/90 disabled:opacity-40 disabled:cursor-not-allowed text-primary-foreground px-5 rounded-lg text-sm font-medium transition-colors glow-accent"
+        >
+          {isLoading ? <Loader2 size={15} className="animate-spin" /> : <Send size={15} />}
+          {isLoading ? 'Processing…' : 'Send Prompt'}
+        </button>
       </div>
 
-      {/* Output Pane */}
-      <div className="w-1/2 h-full flex flex-col overflow-y-auto p-6 space-y-6">
-        <div className="flex items-center space-x-2 mb-4">
-          <ShieldCheck className="text-blue-400" />
-          <h2 className="text-xl font-semibold">AI Response</h2>
+      {/* Output pane */}
+      <div className="w-1/2 h-full flex flex-col overflow-y-auto p-6 gap-5">
+        <div className="flex items-center gap-2">
+          <ShieldCheck size={18} className="text-accent" />
+          <h2 className="text-base font-semibold text-foreground">AI Response</h2>
         </div>
 
         {isLoading && (
-          <div className="space-y-4 animate-pulse">
-            <div className="h-24 bg-[#002b55] rounded-lg w-full"></div>
-            <div className="h-48 bg-[#002b55] rounded-lg w-full"></div>
+          <div className="space-y-3 animate-pulse">
+            <div className="h-20 bg-muted rounded-lg" />
+            <div className="h-40 bg-muted rounded-lg" />
           </div>
         )}
 
         {error && (
-          <div className="p-4 bg-red-900/40 border border-red-600 rounded-lg flex space-x-3 text-red-200">
-            <ShieldAlert className="w-6 h-6 flex-shrink-0" />
-            <p className="text-sm">{error}</p>
+          <div className="flex items-start gap-2 p-3 rounded-lg bg-destructive/10 border border-destructive/20 text-destructive text-sm">
+            <AlertCircle size={15} className="mt-0.5 flex-shrink-0" />
+            {error}
           </div>
         )}
 
         {!isLoading && !response && !error && (
-          <div className="flex flex-col items-center justify-center h-full text-blue-300 opacity-50">
-            <MessageSquare className="w-12 h-12 mb-2" />
-            <p>Send a prompt to see the result</p>
+          <div className="flex flex-col items-center justify-center flex-1 text-muted-foreground gap-2">
+            <MessageSquare size={36} className="opacity-30" />
+            <p className="text-sm">Send a prompt to see the result</p>
           </div>
         )}
 
         {response && (
-          <div className="space-y-6">
+          <div className="space-y-4">
             {response.blocked && (
-              <div className="p-4 bg-red-900/40 border border-red-600 rounded-lg flex space-x-3 text-red-200">
-                <ShieldAlert className="w-6 h-6 flex-shrink-0" />
+              <div className="flex items-start gap-3 p-4 rounded-lg bg-destructive/10 border border-destructive/20 text-destructive">
+                <ShieldAlert size={16} className="mt-0.5 flex-shrink-0" />
                 <div>
-                  <p className="font-bold mb-1">Prompt Blocked</p>
-                  <ul className="list-disc list-inside text-sm opacity-90">
-                    {response.reasons.map((reason, idx) => (
-                      <li key={idx}>{reason}</li>
-                    ))}
+                  <p className="font-semibold text-sm mb-1">Prompt Blocked</p>
+                  <ul className="list-disc list-inside text-xs space-y-0.5 opacity-80">
+                    {response.reasons.map((r, i) => <li key={i}>{r}</li>)}
                   </ul>
                 </div>
               </div>
             )}
 
-            <div className="space-y-2">
-              <label className="text-xs font-bold text-blue-400 uppercase tracking-wider">Sanitized Prompt</label>
-              <div className="p-4 bg-[#002b55] border border-blue-700 rounded-lg font-mono text-sm whitespace-pre-wrap">
+            <div className="space-y-1.5">
+              <p className="text-xs font-semibold text-muted-foreground uppercase tracking-widest">Sanitized Prompt</p>
+              <div className="p-3 rounded-lg bg-secondary border border-border font-mono text-sm whitespace-pre-wrap text-foreground">
                 {response.sanitizedPrompt}
               </div>
             </div>
 
-            <div className="space-y-2">
-              <label className="text-xs font-bold text-blue-400 uppercase tracking-wider">LLM Response</label>
-              <div className="p-4 bg-[#001a3a] border border-blue-800 rounded-lg leading-relaxed">
+            <div className="space-y-1.5">
+              <p className="text-xs font-semibold text-muted-foreground uppercase tracking-widest">LLM Response</p>
+              <div className="p-3 rounded-lg bg-card border border-border text-sm leading-relaxed text-foreground">
                 {response.llmResponse}
               </div>
             </div>

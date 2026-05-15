@@ -20,27 +20,16 @@ const Audit: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
-  const [filters, setFilters] = useState({
-    startDate: '',
-    endDate: '',
-    keyword: '',
-  });
+  const [filters, setFilters] = useState({ startDate: '', endDate: '', keyword: '' });
 
-  useEffect(() => {
-    fetchLogs();
-  }, [page, filters]);
+  useEffect(() => { fetchLogs(); }, [page, filters]);
 
   const fetchLogs = async () => {
     setLoading(true);
     try {
-      const data = await adminApi.getAuditLogs({
-        page,
-        ...filters,
-      });
+      const data = await adminApi.getAuditLogs({ page, ...filters });
       setLogs(data.content || []);
       setTotalPages(data.totalPages || 1);
-    } catch (error) {
-      console.error('Failed to fetch audit logs:', error);
     } finally {
       setLoading(false);
     }
@@ -51,132 +40,110 @@ const Audit: React.FC = () => {
     setPage(1);
   };
 
-  const handlePrint = () => {
-    window.print();
-  };
-
   return (
-    <div className="p-8 min-h-screen bg-slate-50">
-      <div className="max-w-7xl mx-auto">
-        <div className="flex justify-between items-center mb-8 no-print">
-          <h1 className="text-3xl font-bold text-[#001f3f]">Audit Panel</h1>
+    <div className="p-8 h-full overflow-auto">
+      <div className="max-w-6xl mx-auto space-y-6">
+        <div className="flex justify-between items-center no-print">
+          <div>
+            <h1 className="text-2xl font-bold text-foreground tracking-tight">Audit Panel</h1>
+            <p className="text-muted-foreground text-sm mt-1">Complete interaction history and security events</p>
+          </div>
           <button
-            onClick={handlePrint}
-            className="flex items-center gap-2 bg-[#003366] text-white px-4 py-2 rounded-lg hover:bg-[#001f3f] transition-colors"
+            onClick={() => window.print()}
+            className="flex items-center gap-2 h-9 bg-primary hover:bg-primary/90 text-primary-foreground px-4 rounded-lg text-sm font-medium transition-colors"
           >
-            <Download size={18} />
+            <Download size={15} />
             Export PDF
           </button>
         </div>
 
-          <div className="bg-white p-6 rounded-xl shadow-sm mb-8 no-print border border-slate-200">
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <div className="relative">
-                <label htmlFor="startDate" className="text-xs font-semibold text-slate-500 uppercase mb-1 block">Start Date</label>
+        {/* Filters */}
+        <div className="bg-card border border-border rounded-xl p-5 no-print shadow-sm">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            {[
+              { id: 'startDate', label: 'Start Date', type: 'date', icon: Calendar, placeholder: '' },
+              { id: 'endDate',   label: 'End Date',   type: 'date', icon: Calendar, placeholder: '' },
+              { id: 'keyword',   label: 'Keywords',   type: 'text', icon: Search,   placeholder: 'Search user or prompt…' },
+            ].map(({ id, label, type, icon: Icon, placeholder }) => (
+              <div key={id}>
+                <label htmlFor={id} className="block text-xs font-semibold text-muted-foreground uppercase tracking-widest mb-1.5">
+                  {label}
+                </label>
                 <div className="relative">
-                  <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={16} aria-hidden="true" />
+                  <Icon size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
                   <input
-                    id="startDate"
-                    type="date"
-                    name="startDate"
-                    value={filters.startDate}
+                    id={id}
+                    type={type}
+                    name={id}
+                    placeholder={placeholder}
+                    value={filters[id as keyof typeof filters]}
                     onChange={handleFilterChange}
-                    className="w-full pl-10 pr-4 py-2 border border-slate-200 rounded-lg focus-visible:ring-2 focus-visible:ring-[#003366] outline-none"
-                  />
-                </div>
-              </div>
-              <div className="relative">
-                <label htmlFor="endDate" className="text-xs font-semibold text-slate-500 uppercase mb-1 block">End Date</label>
-                <div className="relative">
-                  <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={16} aria-hidden="true" />
-                  <input
-                    id="endDate"
-                    type="date"
-                    name="endDate"
-                    value={filters.endDate}
-                    onChange={handleFilterChange}
-                    className="w-full pl-10 pr-4 py-2 border border-slate-200 rounded-lg focus-visible:ring-2 focus-visible:ring-[#003366] outline-none"
-                  />
-                </div>
-              </div>
-              <div className="relative">
-                <label htmlFor="keyword" className="text-xs font-semibold text-slate-500 uppercase mb-1 block">Keywords</label>
-                <div className="relative">
-                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={16} aria-hidden="true" />
-                  <input
-                    id="keyword"
-                    type="text"
-                    name="keyword"
-                    placeholder="Search user or prompt…"
-                    value={filters.keyword}
-                    onChange={handleFilterChange}
-                    className="w-full pl-10 pr-4 py-2 border border-slate-200 rounded-lg focus-visible:ring-2 focus-visible:ring-[#003366] outline-none"
                     autoComplete="off"
+                    className="w-full h-9 pl-9 pr-3 rounded-lg border border-border bg-input text-foreground placeholder:text-muted-foreground text-sm outline-none focus-visible:ring-2 focus-visible:ring-ring transition-shadow"
                   />
                 </div>
               </div>
-            </div>
+            ))}
           </div>
+        </div>
 
-        <div className="bg-white rounded-xl shadow-sm overflow-hidden border border-slate-200">
-          <table className="w-full text-left border-collapse">
-            <thead className="bg-slate-100 text-slate-600 text-sm uppercase font-semibold">
+        {/* Table */}
+        <div className="bg-card border border-border rounded-xl shadow-sm overflow-hidden">
+          <table className="w-full text-left">
+            <thead className="bg-secondary border-b border-border text-xs font-semibold text-muted-foreground uppercase tracking-widest">
               <tr>
-                <th className="px-6 py-4">User ID</th>
-                <th className="px-6 py-4">Timestamp</th>
-                <th className="px-6 py-4">Prompt Hash (SHA-256)</th>
-                <th className="px-6 py-4">Latency</th>
-                <th className="px-6 py-4">Status</th>
-                <th className="px-6 py-4">Details</th>
+                <th className="px-5 py-3.5">User ID</th>
+                <th className="px-5 py-3.5">Timestamp</th>
+                <th className="px-5 py-3.5">Prompt Hash (SHA-256)</th>
+                <th className="px-5 py-3.5">Latency</th>
+                <th className="px-5 py-3.5">Status</th>
+                <th className="px-5 py-3.5">Details</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-200">
+            <tbody className="divide-y divide-border">
               {loading ? (
                 <tr>
-                  <td colSpan={5} className="px-6 py-12 text-center text-slate-400">
-                    Loading audit logs...
+                  <td colSpan={6} className="px-5 py-12 text-center text-muted-foreground text-sm">
+                    Loading audit logs…
                   </td>
                 </tr>
               ) : logs.length > 0 ? (
                 logs.map((log) => (
-                  <tr key={log.id} className="hover:bg-slate-50 transition-colors">
-                    <td className="px-6 py-4 font-medium text-slate-700 text-sm font-mono truncate max-w-[120px]">
-                      {log.userId}
-                    </td>
-                    <td className="px-6 py-4 text-slate-500 text-sm">
-                      {new Date(log.timestamp).toLocaleString()}
-                    </td>
-                    <td className="px-6 py-4 text-slate-600 text-xs font-mono max-w-xs truncate" title={log.originalPromptHash}>
+                  <tr key={log.id} className="hover:bg-secondary/50 transition-colors">
+                    <td className="px-5 py-3.5 text-sm font-mono text-foreground truncate max-w-[120px]">{log.userId}</td>
+                    <td className="px-5 py-3.5 text-sm text-muted-foreground">{new Date(log.timestamp).toLocaleString()}</td>
+                    <td className="px-5 py-3.5 text-xs font-mono text-muted-foreground max-w-xs truncate" title={log.originalPromptHash}>
                       {log.originalPromptHash}
                     </td>
-                    <td className="px-6 py-4 text-slate-500 text-sm">
-                      {log.processingTimeMs}ms
-                    </td>
-                    <td className="px-6 py-4">
+                    <td className="px-5 py-3.5 text-sm text-muted-foreground">{log.processingTimeMs}ms</td>
+                    <td className="px-5 py-3.5">
                       {log.blocked ? (
-                        <span className="px-2 py-1 rounded-full text-xs font-bold bg-red-100 text-red-600">BLOCKED</span>
+                        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-xs font-semibold bg-destructive/10 text-destructive border border-destructive/20">
+                          BLOCKED
+                        </span>
                       ) : (
-                        <span className="px-2 py-1 rounded-full text-xs font-bold bg-green-100 text-green-600">ALLOWED</span>
+                        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-xs font-semibold bg-success/10 text-success border border-success/20">
+                          ALLOWED
+                        </span>
                       )}
                     </td>
-                    <td className="px-6 py-4">
-                       <button
-                         className="text-[#003366] hover:text-[#001f3f] p-1 rounded hover:bg-slate-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#003366]"
-                         title={`Sanitized: ${log.sanitizedPrompt}\nReasons: ${log.blockedReasons?.join(', ') || 'none'}`}
-                         aria-label={`View details for interaction ${log.id}`}
-                         onClick={() => {
-                           const detail = `Sanitized prompt:\n${log.sanitizedPrompt}\n\nBlocked reasons:\n${log.blockedReasons?.join('\n') || 'none'}`;
-                           window.alert(detail);
-                         }}
-                       >
-                         <FileText size={16} aria-hidden="true" />
-                       </button>
+                    <td className="px-5 py-3.5">
+                      <button
+                        onClick={() => {
+                          const detail = `Sanitized prompt:\n${log.sanitizedPrompt}\n\nBlocked reasons:\n${log.blockedReasons?.join('\n') || 'none'}`;
+                          window.alert(detail);
+                        }}
+                        aria-label={`View details for interaction ${log.id}`}
+                        className="p-1.5 text-muted-foreground hover:text-foreground hover:bg-secondary rounded-lg transition-colors"
+                      >
+                        <FileText size={14} />
+                      </button>
                     </td>
                   </tr>
                 ))
               ) : (
                 <tr>
-                  <td colSpan={5} className="px-6 py-12 text-center text-slate-400">
+                  <td colSpan={6} className="px-5 py-12 text-center text-muted-foreground text-sm">
                     No audit logs found.
                   </td>
                 </tr>
@@ -185,22 +152,21 @@ const Audit: React.FC = () => {
           </table>
         </div>
 
-        <div className="flex justify-between items-center mt-6 no-print">
-          <span className="text-sm text-slate-500">
-            Page {page} of {totalPages}
-          </span>
+        {/* Pagination */}
+        <div className="flex justify-between items-center no-print">
+          <span className="text-sm text-muted-foreground">Page {page} of {totalPages}</span>
           <div className="flex gap-2">
             <button
               disabled={page === 1}
               onClick={() => setPage(p => p - 1)}
-              className="px-4 py-2 border border-slate-200 rounded-lg text-sm hover:bg-slate-100 disabled:opacity-50 transition-colors"
+              className="h-9 px-4 border border-border rounded-lg text-sm hover:bg-secondary disabled:opacity-40 transition-colors"
             >
               Previous
             </button>
             <button
               disabled={page === totalPages}
               onClick={() => setPage(p => p + 1)}
-              className="px-4 py-2 border border-slate-200 rounded-lg text-sm hover:bg-slate-100 disabled:opacity-50 transition-colors"
+              className="h-9 px-4 border border-border rounded-lg text-sm hover:bg-secondary disabled:opacity-40 transition-colors"
             >
               Next
             </button>
