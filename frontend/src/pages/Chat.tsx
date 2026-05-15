@@ -7,6 +7,7 @@ interface Message {
   id: number;
   role: 'user' | 'assistant';
   content: string;
+  sanitizedContent?: string; // sanitized version used in LLM history
   sanitizedPrompt?: string;
   blocked?: boolean;
   reasons?: string[];
@@ -34,22 +35,30 @@ const Chat: React.FC = () => {
     setMessages(prev => [...prev, userMsg]);
     setIsLoading(true);
 
-    // Build history: all previous turns as role/content pairs
+    // Build history using sanitizedContent for user turns so PII never reaches Ollama in history
     const history = messages.flatMap(m => [
-      ...(m.role === 'user' ? [{ role: 'user' as const, content: m.content }] : []),
+      ...(m.role === 'user' ? [{ role: 'user' as const, content: m.sanitizedContent ?? m.content }] : []),
       ...(m.role === 'assistant' && m.content ? [{ role: 'assistant' as const, content: m.content }] : []),
     ]);
 
     try {
       const data = await promptApi.sendPrompt(userText, history);
-      setMessages(prev => [...prev, {
-        id: Date.now() + 1,
-        role: 'assistant',
-        content: data.llmResponse ?? '',
-        sanitizedPrompt: data.sanitizedPrompt,
-        blocked: data.blocked,
-        reasons: data.reasons,
-      }]);
+      setMessages(prev => {
+        // Patch the user message we just added with its sanitized version
+        const updated = [...prev];
+        const lastUserIdx = updated.map(m => m.role).lastIndexOf('user');
+        if (lastUserIdx >= 0) {
+          updated[lastUserIdx] = { ...updated[lastUserIdx], sanitizedContent: data.sanitizedPrompt };
+        }
+        return [...updated, {
+          id: Date.now() + 1,
+          role: 'assistant' as const,
+          content: data.llmResponse ?? '',
+          sanitizedPrompt: data.sanitizedPrompt,
+          blocked: data.blocked,
+          reasons: data.reasons,
+        }];
+      });
     } catch (err: any) {
       setError(err.response?.data?.message || 'Failed to process prompt. Please try again.');
       setMessages(prev => prev.slice(0, -1));
