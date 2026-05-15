@@ -13,16 +13,18 @@ const Chat: React.FC = () => {
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [response, setResponse] = useState<PromptResponse | null>(null);
+  const [error, setError] = useState<string | null>(null);
 
   const handleSend = async () => {
     if (!input.trim()) return;
     setIsLoading(true);
     setResponse(null);
+    setError(null);
     try {
       const data = await promptApi.sendPrompt(input);
       setResponse(data);
-    } catch (error) {
-      console.error('Error sending prompt:', error);
+    } catch (err: any) {
+      setError(err.response?.data?.message || 'Failed to process prompt. Please try again.');
     } finally {
       setIsLoading(false);
     }
@@ -74,7 +76,14 @@ const Chat: React.FC = () => {
           </div>
         )}
 
-        {!isLoading && !response && (
+        {error && (
+          <div className="p-4 bg-red-900/40 border border-red-600 rounded-lg flex space-x-3 text-red-200">
+            <ShieldAlert className="w-6 h-6 flex-shrink-0" />
+            <p className="text-sm">{error}</p>
+          </div>
+        )}
+
+        {!isLoading && !response && !error && (
           <div className="flex flex-col items-center justify-center h-full text-blue-300 opacity-50">
             <MessageSquare className="w-12 h-12 mb-2" />
             <p>Send a prompt to see the result</p>
