@@ -18,11 +18,13 @@ Estás desarrollando **DataShield AI**, un middleware de sanitización DLP (Data
 1. **Sanitización síncrona previa al LLM** (RNF005): Nunca se almacena ni transmite texto crudo con datos sensibles detectados
 2. **Regex para detectar**: emails, tarjetas de crédito (validación Luhn), DNI, teléfonos, patrones custom
 3. **Tiempo máximo de sanitización**: <200ms (usar cache de patrones compilados + profiling)
-4. **Autenticación**: JWT con refresh tokens + soporte OIDC/LDAP para integración corporativa
+4. **Autenticación**: JWT con algoritmo **RS256** + refresh tokens + soporte OIDC/LDAP para integración corporativa
 5. **RBAC estricto**: Roles `ROLE_EMPLOYEE` y `ROLE_ADMIN` con validación en CADA endpoint (RNF004)
 6. **Logging de auditoría inmutable** (RNF009): cada interacción se guarda con usuario, timestamp, prompt original (hash SHA-256), prompt sanitizado, decisión, IP, user-agent
-7. **OWASP Top 10 mitigation** (RNF006): protección específica contra Prompt Injection, XSS en renderizado, SQL/NoSQL injection
-8. **HTTPS/TLS 1.3** en producción, headers de seguridad (CORS, CSP, HSTS, X-Content-Type-Options)
+7. **OWASP Top 10 mitigation** (RNF006): protección específica contra Prompt Injection, XSS en renderizado, SQL/NoSQL injection. CSRF protection habilitado.
+8. **HTTPS/TLS 1.3** en producción, HTTP/2, headers de seguridad (CORS, CSP, HSTS, X-Content-Type-Options)
+9. **Rate limiting**: 30 requests/minuto por IP (implementar con bucket4j o similar)
+10. **Cumplimiento GDPR** y normativas locales de protección de datos
 
 ## ⚡ REQUISITOS DE RENDIMIENTO (RNF001-RNF002, EC-001-EC-002)
 | Métrica | Objetivo | Medición |
@@ -32,6 +34,14 @@ Estás desarrollando **DataShield AI**, un middleware de sanitización DLP (Data
 | Dashboard de auditoría (50k registros + 3 filtros) | **< 1.5-2 segundos** render | Frontend Performance API + backend query time |
 | Concurrencia soportada | **>100 usuarios simultáneos** sin degradación | Load testing con Gatling/JMeter |
 | Disponibilidad | **99.5%** en horario laboral | Uptime monitoring + health checks |
+
+## 🎯 OBJETIVOS DE NEGOCIO (contexto para decisiones de diseño)
+| ID | Objetivo | Plazo | Métrica de éxito |
+|----|----------|-------|-----------------|
+| OBJ-01 | Prevenir fugas de datos sensibles en interacciones LLM mediante sanitización automática | 3 meses | 95% reducción de exposición accidental |
+| OBJ-02 | Auditoría de seguridad centralizada en dashboard unificado | 4 meses | 70% más rápido en investigación de incidentes |
+| OBJ-03 | Habilitar uso de IA sin interrumpir flujo de trabajo | 3 meses | 40% mejora de productividad |
+| OBJ-04 | Trazabilidad completa para cumplimiento de privacidad | Inmediato | 100% cobertura para evitar penalizaciones por manejo de datos |
 
 ## 🌐 ENDPOINTS REST (v1) - Con validación RBAC
 ```
@@ -49,6 +59,15 @@ GET    /api/v1/users               → Page<User> [ROLE_ADMIN]
 POST   /api/v1/notifications/test  → Send test email [ROLE_ADMIN]
 GET    /api/v1/health              → {status: "UP", db: "UP", llm: "UP"} [PUBLIC]
 ```
+
+## 🖥️ PANTALLAS FRONTEND (5 vistas requeridas)
+1. **Login** — autenticación unificada (Employee y Admin comparten pantalla)
+2. **Chat** (ROLE_EMPLOYEE) — interfaz conversacional con LLM; la sanitización es transparente al usuario
+3. **Audit Panel** (ROLE_ADMIN) — tabla de interacciones con filtros por fecha, tipo de dato, usuario, keyword; exportación PDF
+4. **Policy Config** (ROLE_ADMIN) — CRUD de patrones DLP con test en vivo
+5. **Dashboard / Reports** (ROLE_ADMIN) — analytics: total detecciones, tasa de bloqueo, patrones más activados
+
+**UI/UX**: estética moderna con azules profundos e iconografía de escudo; resolución mínima 1024×768; WCAG 2.1 AA obligatorio.
 
 ## 📦 MODELOS DE DATOS (MongoDB Collections) - Con índices
 
@@ -154,6 +173,18 @@ public interface SanitizationService {
 - ❌ No permitir falsos positivos que bloqueen código legítimo (validar con tests de regresión)
 - ❌ No actualizar políticas con downtime (usar hot-reload o feature flags)
 - ❌ No usar TLS <1.2 en comunicaciones externas (LLM API, SMTP, OAuth)
+
+## 📧 NOTIFICACIONES (RNF requerido)
+- SMTP con **STARTTLS** para alertas de detección de datos sensibles
+- Templates HTML con **Thymeleaf**
+- Endpoint `POST /api/v1/notifications/test` para validar configuración SMTP
+- Alerta automática al admin cuando se bloquea un prompt
+
+## 🔌 INTEGRACIÓN LLM
+- Provider configurable vía `application.yml` (default: OpenAI)
+- **Mock LLM service obligatorio** para ambiente de testing/dev (no gastar tokens en tests)
+- Soporte opcional **WebSocket** (`wss://`) para streaming de respuestas LLM en tiempo real
+- OpenFeign con Resilience4j circuit breaker para llamadas externas
 
 ## 🌍 INTEGRACIÓN CORPORATIVA (Restricción de Negocio)
 - El sistema debe ser compatible con LDAP/Active Directory/OIDC para autenticación
