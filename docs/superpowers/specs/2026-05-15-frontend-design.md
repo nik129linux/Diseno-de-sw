@@ -10,10 +10,13 @@ Implementation of the frontend for DataShield AI, a DLP middleware for LLMs. The
 - **API Client**: Axios with interceptors for JWT injection
 - **Accessibility**: WCAG 2.1 AA compliance using semantic HTML and ARIA labels
 - **Routing**: React Router with protected route wrappers (`<PrivateRoute>`)
+- **UI Primitives**: Radix UI (Dialog, DropdownMenu, Select, Toast)
 
 ## 3. Core Components & Architecture
 ### Auth Management
 - **AuthContext**: Manages the JWT and user role (`ROLE_EMPLOYEE`, `ROLE_ADMIN`).
+- **Token Storage**: Access token stored in memory (React state), refresh token in httpOnly cookie.
+- **Refresh Flow**: Axios response interceptor handles 401 $\to$ calls `/auth/refresh` $\to$ retries original request.
 - **Routing Logic**: 
   - No token $\to$ Redirect to `/login`.
   - `ROLE_EMPLOYEE` $\to$ Default to `/chat`.
