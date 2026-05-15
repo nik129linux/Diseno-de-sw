@@ -1,6 +1,7 @@
 package com.datashield.ai.exception;
 
 import lombok.Getter;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -17,6 +18,7 @@ import java.util.Map;
  * Provides consistent error responses across all endpoints.
  * Implements OWASP security best practices by not exposing internal details.
  */
+@Slf4j
 @RestControllerAdvice
 public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
 
@@ -70,9 +72,8 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
             Exception ex,
             org.springframework.web.context.request.WebRequest request) {
         
-        // Log full stack trace for debugging
-        // But don't expose internal details to client
-        
+        log.error("Unhandled exception: {}", ex.getMessage(), ex);
+
         ErrorResponse error = new ErrorResponse(
             HttpStatus.INTERNAL_SERVER_ERROR,
             "An unexpected error occurred. Please try again later.",

@@ -110,6 +110,6 @@ public class Policy {
         /**
          * False positive rate (monitored for optimization)
          */
-        private double falsePositiveRate;
+        private Double falsePositiveRate;
     }
 }
