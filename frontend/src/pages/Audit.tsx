@@ -69,50 +69,54 @@ const Audit: React.FC = () => {
           </button>
         </div>
 
-        <div className="bg-white p-6 rounded-xl shadow-sm mb-8 no-print border border-slate-200">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div className="relative">
-              <label className="text-xs font-semibold text-slate-500 uppercase mb-1 block">Start Date</label>
+          <div className="bg-white p-6 rounded-xl shadow-sm mb-8 no-print border border-slate-200">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <div className="relative">
-                <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={16} />
-                <input
-                  type="date"
-                  name="startDate"
-                  value={filters.startDate}
-                  onChange={handleFilterChange}
-                  className="w-full pl-10 pr-4 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-[#003366] outline-none"
-                />
+                <label htmlFor="startDate" className="text-xs font-semibold text-slate-500 uppercase mb-1 block">Start Date</label>
+                <div className="relative">
+                  <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={16} aria-hidden="true" />
+                  <input
+                    id="startDate"
+                    type="date"
+                    name="startDate"
+                    value={filters.startDate}
+                    onChange={handleFilterChange}
+                    className="w-full pl-10 pr-4 py-2 border border-slate-200 rounded-lg focus-visible:ring-2 focus-visible:ring-[#003366] outline-none"
+                  />
+                </div>
               </div>
-            </div>
-            <div className="relative">
-              <label className="text-xs font-semibold text-slate-500 uppercase mb-1 block">End Date</label>
               <div className="relative">
-                <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={16} />
-                <input
-                  type="date"
-                  name="endDate"
-                  value={filters.endDate}
-                  onChange={handleFilterChange}
-                  className="w-full pl-10 pr-4 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-[#003366] outline-none"
-                />
+                <label htmlFor="endDate" className="text-xs font-semibold text-slate-500 uppercase mb-1 block">End Date</label>
+                <div className="relative">
+                  <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={16} aria-hidden="true" />
+                  <input
+                    id="endDate"
+                    type="date"
+                    name="endDate"
+                    value={filters.endDate}
+                    onChange={handleFilterChange}
+                    className="w-full pl-10 pr-4 py-2 border border-slate-200 rounded-lg focus-visible:ring-2 focus-visible:ring-[#003366] outline-none"
+                  />
+                </div>
               </div>
-            </div>
-            <div className="relative">
-              <label className="text-xs font-semibold text-slate-500 uppercase mb-1 block">Keywords</label>
               <div className="relative">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={16} />
-                <input
-                  type="text"
-                  name="keyword"
-                  placeholder="Search user or prompt..."
-                  value={filters.keyword}
-                  onChange={handleFilterChange}
-                  className="w-full pl-10 pr-4 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-[#003366] outline-none"
-                />
+                <label htmlFor="keyword" className="text-xs font-semibold text-slate-500 uppercase mb-1 block">Keywords</label>
+                <div className="relative">
+                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={16} aria-hidden="true" />
+                  <input
+                    id="keyword"
+                    type="text"
+                    name="keyword"
+                    placeholder="Search user or prompt…"
+                    value={filters.keyword}
+                    onChange={handleFilterChange}
+                    className="w-full pl-10 pr-4 py-2 border border-slate-200 rounded-lg focus-visible:ring-2 focus-visible:ring-[#003366] outline-none"
+                    autoComplete="off"
+                  />
+                </div>
               </div>
             </div>
           </div>
-        </div>
 
         <div className="bg-white rounded-xl shadow-sm overflow-hidden border border-slate-200">
           <table className="w-full text-left border-collapse">
@@ -156,16 +160,17 @@ const Audit: React.FC = () => {
                       )}
                     </td>
                     <td className="px-6 py-4">
-                      <button
-                        className="text-[#003366] hover:text-[#001f3f] p-1 rounded hover:bg-slate-100"
-                        title={`Sanitized: ${log.sanitizedPrompt}\nReasons: ${log.blockedReasons?.join(', ') || 'none'}`}
-                        onClick={() => {
-                          const detail = `Sanitized prompt:\n${log.sanitizedPrompt}\n\nBlocked reasons:\n${log.blockedReasons?.join('\n') || 'none'}`;
-                          window.alert(detail);
-                        }}
-                      >
-                        <FileText size={16} />
-                      </button>
+                       <button
+                         className="text-[#003366] hover:text-[#001f3f] p-1 rounded hover:bg-slate-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#003366]"
+                         title={`Sanitized: ${log.sanitizedPrompt}\nReasons: ${log.blockedReasons?.join(', ') || 'none'}`}
+                         aria-label={`View details for interaction ${log.id}`}
+                         onClick={() => {
+                           const detail = `Sanitized prompt:\n${log.sanitizedPrompt}\n\nBlocked reasons:\n${log.blockedReasons?.join('\n') || 'none'}`;
+                           window.alert(detail);
+                         }}
+                       >
+                         <FileText size={16} aria-hidden="true" />
+                       </button>
                     </td>
                   </tr>
                 ))

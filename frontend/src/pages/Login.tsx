@@ -49,28 +49,31 @@ const Login: React.FC = () => {
         <form onSubmit={handleSubmit} className="space-y-6">
           <div>
             <label htmlFor="email" className="block text-sm font-medium mb-2">Email Address</label>
-            <input
-              id="email"
-              type="email"
-              required
-              className="w-full px-4 py-2 rounded-lg bg-[#001f3f] border border-blue-400/30 text-white placeholder-blue-300 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all"
-              placeholder="name@company.com"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-            />
+              <input
+                id="email"
+                type="email"
+                required
+                className="w-full px-4 py-2 rounded-lg bg-[#001f3f] border border-blue-400/30 text-white placeholder-blue-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 transition-all"
+                placeholder="name@company.com…"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                spellCheck={false}
+                autoComplete="email"
+              />
           </div>
 
           <div>
             <label htmlFor="password" className="block text-sm font-medium mb-2">Password</label>
-            <input
-              id="password"
-              type="password"
-              required
-              className="w-full px-4 py-2 rounded-lg bg-[#001f3f] border border-blue-400/30 text-white placeholder-blue-300 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all"
-              placeholder="••••••••"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-            />
+              <input
+                id="password"
+                type="password"
+                required
+                className="w-full px-4 py-2 rounded-lg bg-[#001f3f] border border-blue-400/30 text-white placeholder-blue-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 transition-all"
+                placeholder="••••••••"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                autoComplete="current-password"
+              />
           </div>
 
           {error && (
@@ -79,13 +82,13 @@ const Login: React.FC = () => {
             </div>
           )}
 
-          <button
-            type="submit"
-            disabled={isLoading}
-            className="w-full py-3 px-4 bg-blue-600 hover:bg-blue-500 disabled:bg-blue-800 text-white font-semibold rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-blue-400"
-          >
-            {isLoading ? 'Authenticating...' : 'Sign In'}
-          </button>
+           <button
+             type="submit"
+             disabled={isLoading}
+             className="w-full py-3 px-4 bg-blue-600 hover:bg-blue-500 disabled:bg-blue-800 text-white font-semibold rounded-lg transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-400"
+           >
+             {isLoading ? 'Authenticating…' : 'Sign In'}
+           </button>
         </form>
       </div>
     </div>

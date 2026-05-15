@@ -109,14 +109,22 @@ const Policies: React.FC = () => {
                 <div className="text-xs font-mono text-blue-400 mt-1">{policy.pattern}</div>
                 <div className="text-[10px] uppercase tracking-wider text-blue-500 mt-1 font-bold">{policy.action}</div>
               </div>
-              <div className="flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                <button onClick={() => openEditDialog(policy)} className="p-2 hover:text-blue-300 transition-colors">
-                  <Pencil size={16} />
-                </button>
-                <button onClick={() => handleDeletePolicy(policy.id)} className="p-2 hover:text-red-400 transition-colors">
-                  <Trash2 size={16} />
-                </button>
-              </div>
+               <div className="flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                 <button 
+                   onClick={() => openEditDialog(policy)} 
+                   className="p-2 hover:text-blue-300 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-400"
+                   aria-label={`Edit policy ${policy.name}`}
+                 >
+                   <Pencil size={16} aria-hidden="true" />
+                 </button>
+                 <button 
+                   onClick={() => handleDeletePolicy(policy.id)} 
+                   className="p-2 hover:text-red-400 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-400"
+                   aria-label={`Delete policy ${policy.name}`}
+                 >
+                   <Trash2 size={16} aria-hidden="true" />
+                 </button>
+               </div>
             </div>
           ))}
           {policies.length === 0 && <div className="text-center py-12 text-blue-400 italic">No policies configured.</div>}
@@ -131,15 +139,16 @@ const Policies: React.FC = () => {
         </div>
         
         <div className="flex-1 flex flex-col gap-4">
-          <div className="flex-1 flex flex-col">
-            <label className="text-sm text-blue-300 mb-2 uppercase tracking-widest font-medium">Input Text</label>
-            <textarea 
-              value={testText}
-              onChange={(e) => setTestText(e.target.value)}
-              className="flex-1 p-4 bg-blue-900/40 border border-blue-800 rounded-xl text-white font-mono resize-none focus:ring-2 focus:ring-blue-500 outline-none transition-all"
-              placeholder="Type text to test your patterns (e.g. My email is test@example.com)..."
-            />
-          </div>
+             <div className="flex-1 flex flex-col">
+               <label htmlFor="test-playground-input" className="text-sm text-blue-300 mb-2 uppercase tracking-widest font-medium">Input Text</label>
+               <textarea 
+                 id="test-playground-input"
+                 value={testText}
+                 onChange={(e) => setTestText(e.target.value)}
+                 className="flex-1 p-4 bg-blue-900/40 border border-blue-800 rounded-xl text-white font-mono resize-none focus-visible:ring-2 focus-visible:ring-blue-500 outline-none transition-all"
+                 placeholder="Type text to test your patterns (e.g. My email is test@example.com)…"
+               />
+             </div>
           
           <div className="flex-1 flex flex-col">
             <label className="text-sm text-blue-300 mb-2 uppercase tracking-widest font-medium">Processed Result</label>
@@ -161,28 +170,31 @@ const Policies: React.FC = () => {
             
             <div className="space-y-4">
               <div>
-                <label className="block text-sm text-blue-300 mb-1">Policy Name</label>
-                <input 
-                  value={newPolicy.name}
-                  onChange={(e) => setNewPolicy({...newPolicy, name: e.target.value})}
-                  className="w-full p-2 bg-blue-900/40 border border-blue-800 rounded-lg text-white outline-none focus:ring-2 focus:ring-blue-500"
-                />
+                 <label htmlFor="policy-name" className="block text-sm text-blue-300 mb-1">Policy Name</label>
+                 <input 
+                   id="policy-name"
+                   value={newPolicy.name}
+                   onChange={(e) => setNewPolicy({...newPolicy, name: e.target.value})}
+                   className="w-full p-2 bg-blue-900/40 border border-blue-800 rounded-lg text-white outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
+                 />
               </div>
               <div>
-                <label className="block text-sm text-blue-300 mb-1">Regex Pattern</label>
-                <input 
-                  value={newPolicy.pattern}
-                  onChange={(e) => setNewPolicy({...newPolicy, pattern: e.target.value})}
-                  className="w-full p-2 bg-blue-900/40 border border-blue-800 rounded-lg text-white font-mono outline-none focus:ring-2 focus:ring-blue-500"
-                />
+                 <label htmlFor="policy-pattern" className="block text-sm text-blue-300 mb-1">Regex Pattern</label>
+                 <input 
+                   id="policy-pattern"
+                   value={newPolicy.pattern}
+                   onChange={(e) => setNewPolicy({...newPolicy, pattern: e.target.value})}
+                   className="w-full p-2 bg-blue-900/40 border border-blue-800 rounded-lg text-white font-mono outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
+                 />
               </div>
               <div>
-                <label className="block text-sm text-blue-300 mb-1">Action</label>
-                <select 
-                  value={newPolicy.action}
-                  onChange={(e) => setNewPolicy({...newPolicy, action: e.target.value as any})}
-                  className="w-full p-2 bg-blue-900/40 border border-blue-800 rounded-lg text-white outline-none focus:ring-2 focus:ring-blue-500"
-                >
+                 <label htmlFor="policy-action" className="block text-sm text-blue-300 mb-1">Action</label>
+                 <select 
+                   id="policy-action"
+                   value={newPolicy.action}
+                   onChange={(e) => setNewPolicy({...newPolicy, action: e.target.value as any})}
+                   className="w-full p-2 bg-blue-900/40 border border-blue-800 rounded-lg text-white outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
+                 >
                   <option value="MASK">Mask (****)</option>
                   <option value="BLOCK">Block (Reject)</option>
                   <option value="WARN">Warn (Alert)</option>
@@ -194,12 +206,12 @@ const Policies: React.FC = () => {
               <Dialog.Close className="px-4 py-2 text-blue-300 hover:text-white transition-colors">
                 Cancel
               </Dialog.Close>
-              <button 
-                onClick={handleSavePolicy}
-                className="bg-blue-600 hover:bg-blue-500 px-6 py-2 rounded-lg font-semibold transition-colors"
-              >
-                Save Policy
-              </button>
+               <button 
+                 onClick={handleSavePolicy}
+                 className="bg-blue-600 hover:bg-blue-500 px-6 py-2 rounded-lg font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-400"
+               >
+                 Save Policy
+               </button>
             </div>
           </Dialog.Content>
         </Dialog.Portal>

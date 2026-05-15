@@ -39,27 +39,29 @@ const Chat: React.FC = () => {
           <h2 className="text-xl font-semibold">Prompt Input</h2>
         </div>
         
-        <textarea
-          className="flex-1 w-full p-4 bg-[#002b55] border border-blue-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-white resize-none"
-          placeholder="Enter your prompt here..."
-          value={input}
-          onChange={(e) => setInput(e.target.value)}
-          onKeyDown={(e) => {
-            if (e.key === 'Enter' && !e.shiftKey) {
-              e.preventDefault();
-              handleSend();
-            }
-          }}
-        />
+         <textarea
+           id="chat-prompt"
+           aria-label="Enter your prompt"
+           className="flex-1 w-full p-4 bg-[#002b55] border border-blue-700 rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 text-white resize-none"
+           placeholder="Enter your prompt here…"
+           value={input}
+           onChange={(e) => setInput(e.target.value)}
+           onKeyDown={(e) => {
+             if (e.key === 'Enter' && !e.shiftKey) {
+               e.preventDefault();
+               handleSend();
+             }
+           }}
+         />
         
-        <button
-          onClick={handleSend}
-          disabled={isLoading || !input.trim()}
-          className="flex items-center justify-center space-x-2 bg-blue-600 hover:bg-blue-500 disabled:bg-blue-800 disabled:cursor-not-allowed text-white px-6 py-3 rounded-lg font-medium transition-colors"
-        >
-          {isLoading ? <Loader2 className="animate-spin w-5 h-5" /> : <Send className="w-5 h-5" />}
-          <span>{isLoading ? 'Processing...' : 'Send Prompt'}</span>
-        </button>
+         <button
+           onClick={handleSend}
+           disabled={isLoading || !input.trim()}
+           className="flex items-center justify-center space-x-2 bg-blue-600 hover:bg-blue-500 disabled:bg-blue-800 disabled:cursor-not-allowed text-white px-6 py-3 rounded-lg font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-400"
+         >
+           {isLoading ? <Loader2 className="animate-spin w-5 h-5" /> : <Send className="w-5 h-5" />}
+           <span>{isLoading ? 'Processing…' : 'Send Prompt'}</span>
+         </button>
       </div>
 
       {/* Output Pane */}
