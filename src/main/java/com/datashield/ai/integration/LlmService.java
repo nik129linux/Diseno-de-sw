@@ -20,17 +20,14 @@ public class LlmService {
     private final MockLlmService mockLlmService;
     private final RestTemplate restTemplate;
 
-    @Value("${llm.provider:mock}")
+    @Value("${llm.provider:ollama}")
     private String llmProvider;
 
-    @Value("${llm.nvidia.api-key:}")
-    private String nvidiaApiKey;
+    @Value("${llm.ollama.base-url:http://host.docker.internal:11434/v1}")
+    private String ollamaBaseUrl;
 
-    @Value("${llm.nvidia.base-url:https://integrate.api.nvidia.com/v1}")
-    private String nvidiaBaseUrl;
-
-    @Value("${llm.nvidia.model:meta/llama-3.1-8b-instruct}")
-    private String nvidiaModel;
+    @Value("${llm.ollama.model:gemma4:31b-cloud}")
+    private String ollamaModel;
 
     @CircuitBreaker(name = "llmService", fallbackMethod = "fallbackResponse")
     @Retry(name = "llmService")
@@ -39,23 +36,25 @@ public class LlmService {
             return mockLlmService.generateResponse(sanitizedPrompt);
         }
 
-        if ("nvidia".equalsIgnoreCase(llmProvider)) {
-            return callNvidiaApi(sanitizedPrompt);
+        if ("ollama".equalsIgnoreCase(llmProvider)) {
+            return callOpenAiCompatible(ollamaBaseUrl, ollamaModel, null, sanitizedPrompt);
         }
 
         log.warn("Unknown LLM provider '{}', falling back to mock", llmProvider);
         return mockLlmService.generateResponse(sanitizedPrompt);
     }
 
-    private String callNvidiaApi(String prompt) {
-        log.info("Calling NVIDIA NIM API, model={}", nvidiaModel);
+    private String callOpenAiCompatible(String baseUrl, String model, String apiKey, String prompt) {
+        log.info("Calling LLM provider={} model={}", llmProvider, model);
 
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);
-        headers.setBearerAuth(nvidiaApiKey);
+        if (apiKey != null && !apiKey.isBlank()) {
+            headers.setBearerAuth(apiKey);
+        }
 
         Map<String, Object> body = Map.of(
-            "model", nvidiaModel,
+            "model", model,
             "messages", List.of(Map.of("role", "user", "content", prompt)),
             "max_tokens", 1024,
             "temperature", 0.7
@@ -65,7 +64,7 @@ public class LlmService {
 
         try {
             ResponseEntity<Map> response = restTemplate.postForEntity(
-                nvidiaBaseUrl + "/chat/completions", entity, Map.class
+                baseUrl + "/chat/completions", entity, Map.class
             );
 
             if (response.getStatusCode().is2xxSuccessful() && response.getBody() != null) {
@@ -78,9 +77,9 @@ public class LlmService {
                     }
                 }
             }
-            throw new RuntimeException("Empty or unexpected response from NVIDIA API");
+            throw new RuntimeException("Empty or unexpected response from " + llmProvider);
         } catch (Exception e) {
-            log.error("NVIDIA API call failed: {}", e.getMessage());
+            log.error("LLM call failed (provider={}): {}", llmProvider, e.getMessage());
             throw e;
         }
     }
@@ -91,7 +90,6 @@ public class LlmService {
     }
 
     public boolean isHealthy() {
-        if ("mock".equalsIgnoreCase(llmProvider)) return true;
-        return nvidiaApiKey != null && !nvidiaApiKey.isBlank();
+        return !"mock".equalsIgnoreCase(llmProvider) || mockLlmService != null;
     }
 }
