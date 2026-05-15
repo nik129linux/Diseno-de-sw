@@ -243,7 +243,7 @@ class SanitizationServiceTest {
         Policy policy = createDefaultPolicy();
 
         // When & Then
-        assertThrows(Exception.class, () -> 
+        assertThrows(SanitizationException.class, () -> 
             sanitizationService.sanitize(null, policy));
     }
 
