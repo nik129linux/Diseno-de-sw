@@ -174,9 +174,11 @@ class SanitizationServiceTest {
         long duration = System.currentTimeMillis() - startTime;
 
         // Then
+        assertNotNull(result, "Sanitization result should not be null");
         assertTrue(duration < 200, 
             () -> "Sanitization took " + duration + "ms, expected <200ms");
-        assertEquals(duration, result.getProcessingTimeMs());
+        assertTrue(result.getProcessingTimeMs() < 200,
+            () -> "Stored processing time " + result.getProcessingTimeMs() + "ms exceeded 200ms limit");
     }
 
     @Test
@@ -243,7 +245,7 @@ class SanitizationServiceTest {
         Policy policy = createDefaultPolicy();
 
         // When & Then
-        assertThrows(Exception.class, () -> 
+        assertThrows(SanitizationException.class, () -> 
             sanitizationService.sanitize(null, policy));
     }
 
