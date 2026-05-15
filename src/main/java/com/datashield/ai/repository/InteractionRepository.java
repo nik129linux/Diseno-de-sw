@@ -86,7 +86,7 @@ public interface InteractionRepository extends MongoRepository<Interaction, Stri
         "{ $group: { _id: null, avgTime: { $avg: '$processingTimeMs' } } }",
         "{ $project: { _id: 0, avgTime: 1 } }"
     })
-    double calculateAverageProcessingTime();
+    Double calculateAverageProcessingTime();
 
     /**
      * Get top blocked patterns using aggregation

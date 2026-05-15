@@ -108,7 +108,8 @@ public class AuditController {
             : interactionRepository.countByBlockedTrue();
         
         // Average latency
-        double avgLatency = interactionRepository.calculateAverageProcessingTime();
+        Double avgLatencyRaw = interactionRepository.calculateAverageProcessingTime();
+        double avgLatency = avgLatencyRaw != null ? avgLatencyRaw : 0.0;
         
         // Block rate
         double blockRate = totalInteractions > 0 ? (double) blockedCount / totalInteractions * 100 : 0;
@@ -116,7 +117,7 @@ public class AuditController {
         stats.put("totalInteractions", totalInteractions);
         stats.put("blockedCount", blockedCount);
         stats.put("blockRate", String.format("%.2f%%", blockRate));
-        stats.put("avgLatencyMs", Math.round(avgLatency));
+        stats.put("avgLatency", Math.round(avgLatency));
         stats.put("periodStart", startDate != null ? startDate.toString() : "all-time");
         stats.put("periodEnd", endDate != null ? endDate.toString() : "now");
         
