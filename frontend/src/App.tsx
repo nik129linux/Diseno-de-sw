@@ -5,7 +5,8 @@ import ProtectedRoute from './components/layout/ProtectedRoute';
 import Login from './pages/Login';
 
 // Placeholder components for other pages
-const Chat = () => <div className="p-8 text-white bg-[#001f3f] min-h-screen">Chat Workspace coming soon...</div>;
+import Chat from './pages/Chat';
+
 const Dashboard = () => <div className="p-8 text-white bg-[#001f3f] min-h-screen">Admin Dashboard coming soon...</div>;
 const Audit = () => <div className="p-8 text-white bg-[#001f3f] min-h-screen">Audit Panel coming soon...</div>;
 const Policies = () => <div className="p-8 text-white bg-[#001f3f] min-h-screen">Policy Config coming soon...</div>;
