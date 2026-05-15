@@ -1,0 +1,96 @@
+server:
+  port: 8080
+  http2:
+    enabled: true
+  ssl:
+    enabled: false  # Enable in production with proper certificates
+
+spring:
+  application:
+    name: datashield-ai
+  data:
+    mongodb:
+      uri: ${MONGODB_URI:mongodb://admin:secure_password_123@localhost:27017/datashield?authSource=admin}
+      auto-index-creation: true
+  security:
+    filter:
+      order: -100
+
+# JWT Configuration
+jwt:
+  secret-key: ${JWT_SECRET_KEY:change-this-in-production-to-a-very-long-secure-random-string-minimum-256-bits}
+  access-token-expiration: ${JWT_ACCESS_EXPIRATION:900000}  # 15 minutes
+  refresh-token-expiration: ${JWT_REFRESH_EXPIRATION:604800000}  # 7 days
+  issuer: datashield-ai
+
+# Resilience4j Circuit Breaker for LLM calls
+resilience4j:
+  circuitbreaker:
+    instances:
+      llmService:
+        slidingWindowSize: 10
+        failureRateThreshold: 50
+        waitDurationInOpenState: 30000
+        permittedNumberOfCallsInHalfOpenState: 5
+        automaticTransitionFromOpenToHalfOpenEnabled: true
+  retry:
+    instances:
+      llmService:
+        maxAttempts: 3
+        waitDuration: 1s
+        enableExponentialBackoff: true
+        exponentialBackoffMultiplier: 2
+
+# Caffeine Cache for compiled regex patterns
+cache:
+  caffeine:
+    spec: maximumSize=1000,expireAfterAccess=1h
+
+# Performance monitoring
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,metrics,prometheus
+  metrics:
+    tags:
+      application: ${spring.application.name}
+
+# Logging
+logging:
+  level:
+    root: INFO
+    com.datashield.ai: DEBUG
+    org.springframework.security: DEBUG
+  pattern:
+    console: "%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n"
+
+# Rate limiting (bucket4j configuration)
+rate-limiting:
+  enabled: true
+  max-requests: 30
+  duration-seconds: 60
+
+# LLM Provider Configuration
+llm:
+  provider: ${LLM_PROVIDER:mock}  # mock, openai
+  openai:
+    api-key: ${OPENAI_API_KEY:}
+    base-url: https://api.openai.com/v1
+    model: gpt-3.5-turbo
+    timeout: 30000
+
+# Email Notifications
+email:
+  enabled: ${EMAIL_ENABLED:false}
+  smtp:
+    host: ${SMTP_HOST:smtp.gmail.com}
+    port: ${SMTP_PORT:587}
+    username: ${SMTP_USERNAME:}
+    password: ${SMTP_PASSWORD:}
+    properties:
+      mail:
+        smtp:
+          auth: true
+          starttls:
+            enable: true
