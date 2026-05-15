@@ -3,6 +3,7 @@ package com.datashield.ai.controller;
 import com.datashield.ai.service.EmailService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
@@ -26,6 +27,7 @@ import java.util.Map;
 @RequestMapping("/api/v1/notifications")
 @RequiredArgsConstructor
 @PreAuthorize("hasRole('ADMIN')")
+@ConditionalOnBean(EmailService.class)
 public class NotificationController {
 
     private final EmailService emailService;

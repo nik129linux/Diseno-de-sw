@@ -2,6 +2,7 @@ package com.datashield.ai.config;
 
 import io.github.bucket4j.Bandwidth;
 import io.github.bucket4j.Bucket;
+import io.github.bucket4j.Refill;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -33,10 +34,7 @@ public class RateLimitingFilter extends OncePerRequestFilter {
 
     private final Map<String, Bucket> buckets = new ConcurrentHashMap<>();
     
-    private static final Bandwidth LIMIT = Bandwidth.builder()
-            .capacity(30)
-            .refillGreedy(30, Duration.ofMinutes(1))
-            .build();
+    private static final Bandwidth LIMIT = Bandwidth.classic(30, Refill.greedy(30, Duration.ofMinutes(1)));
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response,

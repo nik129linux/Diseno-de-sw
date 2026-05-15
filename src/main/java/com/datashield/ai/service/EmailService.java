@@ -1,7 +1,7 @@
 package com.datashield.ai.service;
 
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.stereotype.Service;
@@ -28,11 +28,16 @@ import java.util.Map;
  */
 @Slf4j
 @Service
-@RequiredArgsConstructor
+@ConditionalOnProperty(name = "spring.mail.host")
 public class EmailService {
 
     private final JavaMailSender mailSender;
     private final TemplateEngine templateEngine;
+
+    public EmailService(JavaMailSender mailSender, TemplateEngine templateEngine) {
+        this.mailSender = mailSender;
+        this.templateEngine = templateEngine;
+    }
 
     /**
      * Sends a test email to verify SMTP configuration.

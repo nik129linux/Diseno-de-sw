@@ -10,6 +10,8 @@ services:
       - .:/workspace:cached
       - ~/.m2:/home/vscode/.m2  # Cache de Maven host → container
     command: sleep infinity
+    ports:
+      - "8080:8080"
     networks:
       - datashield-net
     depends_on:
