@@ -6,9 +6,9 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-/**
- * Prompt Submission Request DTO
- */
+import java.util.List;
+import java.util.Map;
+
 @Data
 @Builder
 @NoArgsConstructor
@@ -17,4 +17,7 @@ public class PromptRequest {
 
     @NotBlank(message = "Prompt is required")
     private String prompt;
+
+    /** Previous turns: [{role:"user",content:"..."},{role:"assistant",content:"..."}] */
+    private List<Map<String, String>> history;
 }

@@ -74,9 +74,10 @@ public class PromptController {
                 .reasons(sanitizationResult.getBlockingReasons())
                 .latencyMs(System.currentTimeMillis() - startTime);
 
-        // If not blocked, call LLM — CB lives on LlmService.generateCompletion, not here
+        // If not blocked, call LLM with full conversation history
         if (!sanitizationResult.isBlocked()) {
-            String llmResponse = llmService.generateCompletion(sanitizationResult.getSanitizedPrompt());
+            String llmResponse = llmService.generateCompletion(
+                sanitizationResult.getSanitizedPrompt(), request.getHistory());
             responseBuilder.llmResponse(llmResponse);
         }
 

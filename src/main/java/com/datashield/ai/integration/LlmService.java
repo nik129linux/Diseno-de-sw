@@ -29,23 +29,25 @@ public class LlmService {
     @Value("${llm.ollama.model:gemma4:31b-cloud}")
     private String ollamaModel;
 
-    @CircuitBreaker(name = "llmService", fallbackMethod = "fallbackResponse")
+    @CircuitBreaker(name = "llmService", fallbackMethod = "fallbackResponseWithHistory")
     @Retry(name = "llmService")
-    public String generateCompletion(String sanitizedPrompt) {
+    public String generateCompletion(String sanitizedPrompt, List<Map<String, String>> history) {
         if ("mock".equalsIgnoreCase(llmProvider)) {
             return mockLlmService.generateResponse(sanitizedPrompt);
         }
 
         if ("ollama".equalsIgnoreCase(llmProvider)) {
-            return callOpenAiCompatible(ollamaBaseUrl, ollamaModel, null, sanitizedPrompt);
+            return callOpenAiCompatible(ollamaBaseUrl, ollamaModel, null, sanitizedPrompt, history);
         }
 
         log.warn("Unknown LLM provider '{}', falling back to mock", llmProvider);
         return mockLlmService.generateResponse(sanitizedPrompt);
     }
 
-    private String callOpenAiCompatible(String baseUrl, String model, String apiKey, String prompt) {
-        log.info("Calling LLM provider={} model={}", llmProvider, model);
+    private String callOpenAiCompatible(String baseUrl, String model, String apiKey,
+                                        String prompt, List<Map<String, String>> history) {
+        log.info("Calling LLM provider={} model={} historyTurns={}", llmProvider, model,
+                history != null ? history.size() : 0);
 
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);
@@ -53,9 +55,13 @@ public class LlmService {
             headers.setBearerAuth(apiKey);
         }
 
+        List<Map<String, String>> messages = new java.util.ArrayList<>();
+        if (history != null) messages.addAll(history);
+        messages.add(Map.of("role", "user", "content", prompt));
+
         Map<String, Object> body = Map.of(
             "model", model,
-            "messages", List.of(Map.of("role", "user", "content", prompt)),
+            "messages", messages,
             "max_tokens", 1024,
             "temperature", 0.7
         );
@@ -84,7 +90,7 @@ public class LlmService {
         }
     }
 
-    public String fallbackResponse(String sanitizedPrompt, Throwable t) {
+    public String fallbackResponseWithHistory(String sanitizedPrompt, List<Map<String, String>> history, Throwable t) {
         log.error("LLM service unavailable, using fallback: {}", t.getMessage());
         return "The AI service is temporarily unavailable. Please try again in a few moments.";
     }
