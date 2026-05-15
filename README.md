@@ -6,6 +6,7 @@
 
 Middleware de sanitización DLP (Data Loss Prevention) que actúa como capa de seguridad entre empleados y APIs de LLM (OpenAI, etc.).
 
+🔗 **[Acceder a la Wiki del Proyecto](https://github.com/nik129linux/Diseno-de-sw/wiki)**
 ## 🚀 Características Principales
 
 - **Sanitización en tiempo real** (<200ms) de prompts antes de enviar al LLM
