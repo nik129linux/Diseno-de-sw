@@ -16,9 +16,12 @@ spring:
     filter:
       order: -100
 
-# JWT Configuration
+# JWT Configuration (RS256)
+# Leave rsa-private-key / rsa-public-key empty in dev — ephemeral key pair is generated at startup.
+# In production, set JWT_RSA_PRIVATE_KEY and JWT_RSA_PUBLIC_KEY (base64-encoded PKCS8/X509).
 jwt:
-  secret-key: ${JWT_SECRET_KEY:change-this-in-production-to-a-very-long-secure-random-string-minimum-256-bits}
+  rsa-private-key: ${JWT_RSA_PRIVATE_KEY:}
+  rsa-public-key: ${JWT_RSA_PUBLIC_KEY:}
   access-token-expiration: ${JWT_ACCESS_EXPIRATION:900000}  # 15 minutes
   refresh-token-expiration: ${JWT_REFRESH_EXPIRATION:604800000}  # 7 days
   issuer: datashield-ai

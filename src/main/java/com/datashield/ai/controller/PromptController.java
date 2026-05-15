@@ -9,7 +9,6 @@ import com.datashield.ai.repository.InteractionRepository;
 import com.datashield.ai.repository.PolicyRepository;
 import com.datashield.ai.service.SanitizationResult;
 import com.datashield.ai.service.SanitizationService;
-import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -75,9 +74,9 @@ public class PromptController {
                 .reasons(sanitizationResult.getBlockingReasons())
                 .latencyMs(System.currentTimeMillis() - startTime);
 
-        // If not blocked, call LLM (with circuit breaker)
+        // If not blocked, call LLM — CB lives on LlmService.generateCompletion, not here
         if (!sanitizationResult.isBlocked()) {
-            String llmResponse = callLLMWithCircuitBreaker(sanitizationResult.getSanitizedPrompt());
+            String llmResponse = llmService.generateCompletion(sanitizationResult.getSanitizedPrompt());
             responseBuilder.llmResponse(llmResponse);
         }
 
@@ -90,25 +89,6 @@ public class PromptController {
                 userEmail, response.isBlocked(), response.getLatencyMs());
 
         return ResponseEntity.ok(response);
-    }
-
-    /**
-     * Call LLM service with circuit breaker protection
-     * 
-     * @param sanitizedPrompt sanitized prompt to send to LLM
-     * @return LLM response or fallback message
-     */
-    @CircuitBreaker(name = "llmService", fallbackMethod = "llmFallback")
-    public String callLLMWithCircuitBreaker(String sanitizedPrompt) {
-        return llmService.generateCompletion(sanitizedPrompt);
-    }
-
-    /**
-     * Fallback method for circuit breaker
-     */
-    public String llmFallback(String sanitizedPrompt, Throwable t) {
-        log.warn("LLM service unavailable, using fallback: {}", t.getMessage());
-        return "Service temporarily unavailable. Please try again later.";
     }
 
     /**
