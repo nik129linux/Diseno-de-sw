@@ -9,6 +9,7 @@ interface AuditLog {
   sanitizedPrompt: string;
   blocked: boolean;
   blockedReasons: string[];
+  detectedPatterns: string[];
   processingTimeMs: number;
   timestamp: string;
   ipAddress: string;
@@ -97,13 +98,14 @@ const Audit: React.FC = () => {
                 <th className="px-5 py-3.5">Prompt Hash (SHA-256)</th>
                 <th className="px-5 py-3.5">Latency</th>
                 <th className="px-5 py-3.5">Status</th>
+                <th className="px-5 py-3.5">Detections</th>
                 <th className="px-5 py-3.5">Details</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-border">
               {loading ? (
                 <tr>
-                  <td colSpan={6} className="px-5 py-12 text-center text-muted-foreground text-sm">
+                  <td colSpan={7} className="px-5 py-12 text-center text-muted-foreground text-sm">
                     Loading audit logs…
                   </td>
                 </tr>
@@ -128,9 +130,23 @@ const Audit: React.FC = () => {
                       )}
                     </td>
                     <td className="px-5 py-3.5">
+                      <div className="flex flex-wrap gap-1">
+                        {log.detectedPatterns?.length > 0
+                          ? log.detectedPatterns.map((p) => (
+                              <span key={p} className="px-1.5 py-0.5 rounded text-[10px] font-semibold bg-amber-100 text-amber-700 border border-amber-200">
+                                {p}
+                              </span>
+                            ))
+                          : <span className="text-xs text-muted-foreground">—</span>
+                        }
+                      </div>
+                    </td>
+                    <td className="px-5 py-3.5">
                       <button
                         onClick={() => {
-                          const detail = `Sanitized prompt:\n${log.sanitizedPrompt}\n\nBlocked reasons:\n${log.blockedReasons?.join('\n') || 'none'}`;
+                          const detected = log.detectedPatterns?.join(', ') || 'none';
+                          const blocked = log.blockedReasons?.join('\n') || 'none';
+                          const detail = `Sanitized prompt:\n${log.sanitizedPrompt}\n\nDetected patterns:\n${detected}\n\nBlocked reasons:\n${blocked}`;
                           window.alert(detail);
                         }}
                         aria-label={`View details for interaction ${log.id}`}
@@ -143,7 +159,7 @@ const Audit: React.FC = () => {
                 ))
               ) : (
                 <tr>
-                  <td colSpan={6} className="px-5 py-12 text-center text-muted-foreground text-sm">
+                  <td colSpan={7} className="px-5 py-12 text-center text-muted-foreground text-sm">
                     No audit logs found.
                   </td>
                 </tr>

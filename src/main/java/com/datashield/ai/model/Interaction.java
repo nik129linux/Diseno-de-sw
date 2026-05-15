@@ -70,6 +70,10 @@ public class Interaction {
     @Field("blockedReasons")
     private List<String> blockedReasons;
 
+    /** All patterns detected (masked or blocked), e.g. EMAIL, CREDIT_CARD */
+    @Field("detectedPatterns")
+    private List<String> detectedPatterns;
+
     /**
      * Total processing time in milliseconds (sanitization + LLM call)
      * Must be < 3000ms for 95% of requests (RNF001)

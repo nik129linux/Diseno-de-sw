@@ -109,6 +109,7 @@ public class PromptController {
                     .llmResponse(response.getLlmResponse())
                     .blocked(response.isBlocked())
                     .blockedReasons(response.getReasons())
+                    .detectedPatterns(sanitizationResult.getDetectedPatterns())
                     .processingTimeMs((int) response.getLatencyMs())
                     .timestamp(Instant.now())
                     .ipAddress(request.getRemoteAddr())
