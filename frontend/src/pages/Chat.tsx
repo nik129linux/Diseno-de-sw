@@ -11,6 +11,7 @@ interface Message {
   sanitizedPrompt?: string;
   blocked?: boolean;
   reasons?: string[];
+  detectedPatterns?: string[];
 }
 
 const Chat: React.FC = () => {
@@ -44,11 +45,14 @@ const Chat: React.FC = () => {
     try {
       const data = await promptApi.sendPrompt(userText, history);
       setMessages(prev => {
-        // Patch the user message we just added with its sanitized version
         const updated = [...prev];
         const lastUserIdx = updated.map(m => m.role).lastIndexOf('user');
         if (lastUserIdx >= 0) {
-          updated[lastUserIdx] = { ...updated[lastUserIdx], sanitizedContent: data.sanitizedPrompt };
+          updated[lastUserIdx] = {
+            ...updated[lastUserIdx],
+            sanitizedContent: data.sanitizedPrompt,
+            detectedPatterns: data.detectedPatterns ?? [],
+          };
         }
         return [...updated, {
           id: Date.now() + 1,
@@ -127,6 +131,17 @@ const Chat: React.FC = () => {
                     : 'bg-card border border-border text-foreground rounded-bl-sm'
                 )}>
                   {msg.content || <span className="italic opacity-60">— prompt was blocked, no response —</span>}
+                </div>
+              )}
+
+              {/* PII detection badges — shown on user bubble after response arrives */}
+              {msg.role === 'user' && msg.detectedPatterns && msg.detectedPatterns.length > 0 && (
+                <div className="flex flex-wrap gap-1 justify-end mt-1">
+                  {msg.detectedPatterns.map(p => (
+                    <span key={p} className="px-1.5 py-0.5 rounded text-[10px] font-semibold bg-amber-100 text-amber-700 border border-amber-200">
+                      {p}
+                    </span>
+                  ))}
                 </div>
               )}
             </div>

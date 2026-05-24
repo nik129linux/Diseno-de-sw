@@ -83,7 +83,7 @@ public class DataInitializer implements ApplicationRunner {
                                 "\\b(?:\\d[ \\-]?){13,19}\\b",
                                 "BLOCK", 2),
                         pattern("DNI",
-                                "\\b[0-9]{8}[A-HJ-NP-TV-Z]\\b",
+                                "\\b[0-9]{8}[A-HJ-NP-TV-Za-hj-np-tv-z]?\\b", // letter optional for demo
                                 "MASK", 3),
                         pattern("PHONE",
                                 "\\b(?:\\+?34)?[ \\-]?[6-9]\\d{2}[ \\-]?\\d{3}[ \\-]?\\d{3}\\b",

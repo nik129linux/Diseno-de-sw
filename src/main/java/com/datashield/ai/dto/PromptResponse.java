@@ -39,4 +39,9 @@ public class PromptResponse {
      * LLM response (if not blocked and LLM call succeeded)
      */
     private String llmResponse;
+
+    /**
+     * Pattern names detected (EMAIL, CREDIT_CARD, DNI, etc.) — shown in chat UI
+     */
+    private List<String> detectedPatterns;
 }

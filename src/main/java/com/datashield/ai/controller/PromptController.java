@@ -72,6 +72,7 @@ public class PromptController {
                 .sanitizedPrompt(sanitizationResult.getSanitizedPrompt())
                 .blocked(sanitizationResult.isBlocked())
                 .reasons(sanitizationResult.getBlockingReasons())
+                .detectedPatterns(sanitizationResult.getDetectedPatterns())
                 .latencyMs(System.currentTimeMillis() - startTime);
 
         // If not blocked, call LLM with full conversation history
