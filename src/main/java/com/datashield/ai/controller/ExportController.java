@@ -7,6 +7,9 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVPrinter;
+
+import java.io.OutputStreamWriter;
+import java.nio.charset.StandardCharsets;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.format.annotation.DateTimeFormat;
@@ -65,8 +68,6 @@ public class ExportController {
         String filename = "datashield_audit_" + FMT.format(Instant.now()) + ".csv";
         response.setContentType("text/csv; charset=UTF-8");
         response.setHeader("Content-Disposition", "attachment; filename=\"" + filename + "\"");
-        // UTF-8 BOM for Excel compatibility
-        response.getOutputStream().write(new byte[]{(byte) 0xEF, (byte) 0xBB, (byte) 0xBF});
 
         var pageable = PageRequest.of(0, MAX_RECORDS, Sort.by("timestamp").descending());
         var page = interactionRepository.findByDynamicFilters(
@@ -75,7 +76,13 @@ public class ExportController {
         log.info("CSV export by={} records={} filters=userId:{},blocked:{},types:{}",
                 admin.getUsername(), page.getTotalElements(), userId, blocked, types);
 
-        try (CSVPrinter printer = new CSVPrinter(response.getWriter(),
+        // Use OutputStream exclusively to avoid getWriter/getOutputStream conflict.
+        // Write UTF-8 BOM first (Excel compatibility), then the CSV body.
+        var out = response.getOutputStream();
+        out.write(new byte[]{(byte) 0xEF, (byte) 0xBB, (byte) 0xBF});
+        var writer = new OutputStreamWriter(out, StandardCharsets.UTF_8);
+
+        try (CSVPrinter printer = new CSVPrinter(writer,
                 CSVFormat.DEFAULT.builder()
                         .setHeader("id", "timestamp", "userId", "conversationId",
                                    "sanitizedPrompt", "llmResponse",
