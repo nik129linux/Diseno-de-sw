@@ -6,6 +6,7 @@ import org.springframework.data.domain.Pageable;
 
 import java.time.Instant;
 import java.util.List;
+import java.util.Map;
 
 public interface InteractionRepositoryCustom {
 
@@ -17,4 +18,8 @@ public interface InteractionRepositoryCustom {
             Instant endDate,
             List<String> detectedTypes,
             Pageable pageable);
+
+    Double calculateAverageProcessingTime();
+
+    List<Map<String, Object>> findTopDetectedPatterns();
 }

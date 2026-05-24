@@ -2,10 +2,14 @@ package com.datashield.ai.repository;
 
 import com.datashield.ai.model.Interaction;
 import lombok.RequiredArgsConstructor;
+import org.bson.Document;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.data.mongodb.core.MongoTemplate;
+import org.springframework.data.mongodb.core.aggregation.Aggregation;
+import org.springframework.data.mongodb.core.aggregation.AggregationResults;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.stereotype.Repository;
@@ -13,6 +17,7 @@ import org.springframework.stereotype.Repository;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 @Repository
 @RequiredArgsConstructor
@@ -66,5 +71,36 @@ public class InteractionRepositoryImpl implements InteractionRepositoryCustom {
         List<Interaction> results = mongoTemplate.find(query, Interaction.class);
 
         return new PageImpl<>(results, pageable, total);
+    }
+
+    @Override
+    public Double calculateAverageProcessingTime() {
+        Aggregation agg = Aggregation.newAggregation(
+            Aggregation.group().avg("processingTimeMs").as("avgTime")
+        );
+        AggregationResults<Document> results =
+            mongoTemplate.aggregate(agg, "interactions", Document.class);
+        Document unique = results.getUniqueMappedResult();
+        if (unique == null) return 0.0;
+        Object val = unique.get("avgTime");
+        return val instanceof Number n ? n.doubleValue() : 0.0;
+    }
+
+    @Override
+    public List<Map<String, Object>> findTopDetectedPatterns() {
+        Aggregation agg = Aggregation.newAggregation(
+            Aggregation.unwind("detectedPatterns"),
+            Aggregation.group("detectedPatterns").count().as("count"),
+            Aggregation.sort(Sort.Direction.DESC, "count"),
+            Aggregation.limit(10)
+        );
+        AggregationResults<Document> results =
+            mongoTemplate.aggregate(agg, "interactions", Document.class);
+        return results.getMappedResults().stream()
+            .map(d -> Map.<String, Object>of(
+                "pattern", d.getString("_id"),
+                "count", d.getInteger("count", 0)
+            ))
+            .toList();
     }
 }
