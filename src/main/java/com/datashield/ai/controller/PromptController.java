@@ -31,7 +31,7 @@ import java.util.List;
  */
 @Slf4j
 @RestController
-@RequestMapping("/api/v1/prompt")
+@RequestMapping("/api/v1/chat")
 @RequiredArgsConstructor
 public class PromptController {
 
@@ -50,7 +50,7 @@ public class PromptController {
      * Performance: Total latency < 3 seconds (RNF001)
      * Sanitization: < 200ms (RNF005)
      */
-    @PostMapping
+    @PostMapping("/prompt")
     public ResponseEntity<PromptResponse> submitPrompt(
             @Valid @RequestBody PromptRequest request,
             Authentication authentication,
@@ -84,7 +84,7 @@ public class PromptController {
         PromptResponse response = responseBuilder.build();
 
         // Save audit log (immutable)
-        saveAuditLog(userEmail, request.getPrompt(), sanitizationResult, response, httpServletRequest);
+        saveAuditLog(userEmail, request.getPrompt(), request.getConversationId(), sanitizationResult, response, httpServletRequest);
 
         log.info("Prompt processed for user={}: blocked={}, latency={}ms", 
                 userEmail, response.isBlocked(), response.getLatencyMs());
@@ -95,21 +95,23 @@ public class PromptController {
     /**
      * Save immutable audit log entry
      */
-    private void saveAuditLog(String userEmail, String originalPrompt, 
-                              SanitizationResult sanitizationResult, 
+    private void saveAuditLog(String userEmail, String originalPrompt, String conversationId,
+                              SanitizationResult sanitizationResult,
                               PromptResponse response,
                               HttpServletRequest request) {
         try {
             String promptHash = sha256Hash(originalPrompt);
-            
+
             Interaction interaction = Interaction.builder()
-                    .userId(userEmail) // In production, use actual user ID from database
+                    .userId(userEmail)
+                    .conversationId(conversationId)
                     .originalPromptHash(promptHash)
                     .sanitizedPrompt(response.getSanitizedPrompt())
                     .llmResponse(response.getLlmResponse())
                     .blocked(response.isBlocked())
                     .blockedReasons(response.getReasons())
                     .detectedPatterns(sanitizationResult.getDetectedPatterns())
+                    .detectedData(sanitizationResult.getDetectedData())
                     .processingTimeMs((int) response.getLatencyMs())
                     .timestamp(Instant.now())
                     .ipAddress(request.getRemoteAddr())

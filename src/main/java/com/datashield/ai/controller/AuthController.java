@@ -5,12 +5,15 @@ import com.datashield.ai.dto.LoginResponse;
 import com.datashield.ai.model.User;
 import com.datashield.ai.repository.UserRepository;
 import com.datashield.ai.security.JwtTokenProvider;
+import com.datashield.ai.service.TokenBlacklistService;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Map;
@@ -23,6 +26,7 @@ public class AuthController {
     private final AuthenticationManager authenticationManager;
     private final JwtTokenProvider jwtTokenProvider;
     private final UserRepository userRepository;
+    private final TokenBlacklistService tokenBlacklistService;
 
     @PostMapping("/login")
     public ResponseEntity<LoginResponse> login(@Valid @RequestBody LoginRequest request) {
@@ -56,6 +60,20 @@ public class AuthController {
                 .build();
 
         return ResponseEntity.ok(response);
+    }
+
+    @PostMapping("/logout")
+    public ResponseEntity<Void> logout(HttpServletRequest request) {
+        String bearer = request.getHeader("Authorization");
+        if (StringUtils.hasText(bearer) && bearer.startsWith("Bearer ")) {
+            String token = bearer.substring(7);
+            if (jwtTokenProvider.validateToken(token)) {
+                String userId = jwtTokenProvider.getUsernameFromToken(token);
+                tokenBlacklistService.revoke(token, jwtTokenProvider.getExpirationDateFromToken(token), userId);
+            }
+        }
+        // Always 200: idempotent — calling logout without a token or with an already-revoked one is fine.
+        return ResponseEntity.ok().build();
     }
 
     @PostMapping("/refresh")

@@ -7,7 +7,6 @@ import com.datashield.ai.config.RateLimitingFilter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
@@ -76,8 +75,8 @@ public class SecurityConfig {
                 .requestMatchers("/api/v1/health").permitAll()
                 .requestMatchers("/actuator/**").permitAll()
                 
-                // Prompt endpoint — both employees and admins can chat
-                .requestMatchers(HttpMethod.POST, "/api/v1/prompt").hasAnyRole("EMPLOYEE", "ADMIN")
+                // Chat endpoints (prompt + history) — both employees and admins
+                .requestMatchers("/api/v1/chat/**").hasAnyRole("EMPLOYEE", "ADMIN")
                 
                 // Admin endpoints
                 .requestMatchers("/api/v1/audit/**").hasRole("ADMIN")

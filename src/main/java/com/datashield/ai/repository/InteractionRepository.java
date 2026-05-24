@@ -5,7 +5,6 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.mongodb.repository.Aggregation;
 import org.springframework.data.mongodb.repository.MongoRepository;
-import org.springframework.data.mongodb.repository.Query;
 import org.springframework.stereotype.Repository;
 
 import java.time.Instant;
@@ -17,7 +16,7 @@ import java.util.List;
  * Immutable append-only storage for security compliance.
  */
 @Repository
-public interface InteractionRepository extends MongoRepository<Interaction, String> {
+public interface InteractionRepository extends MongoRepository<Interaction, String>, InteractionRepositoryCustom {
 
     /**
      * Find interactions by user ID with pagination
@@ -65,19 +64,6 @@ public interface InteractionRepository extends MongoRepository<Interaction, Stri
      */
     Interaction findByOriginalPromptHash(String hash);
 
-    /**
-     * Custom query for filtering interactions with multiple criteria
-     * Uses MongoDB aggregation for optimal performance with large datasets
-     */
-    @Query("{ " +
-        "?0 != null : {'userId': ?0}, " +
-        "?1 != null : {'blocked': ?1}, " +
-        "?2 != null : {'$or': [{'sanitizedPrompt': {$regex: ?2, $options: 'i'}}, {'blockedReasons': {$regex: ?2, $options: 'i'}}]}, " +
-        "?3 != null : {'timestamp': {$gte: ?3}}, " +
-        "?4 != null : {'timestamp': {$lte: ?4}} " +
-    "}")
-    Page<Interaction> findByFilters(String userId, Boolean blocked, String keyword, 
-                                    Instant startDate, Instant endDate, Pageable pageable);
 
     /**
      * Calculate average processing time using aggregation

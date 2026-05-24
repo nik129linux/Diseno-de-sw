@@ -1,7 +1,9 @@
 package com.datashield.ai.model;
 
+import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.index.Indexed;
@@ -11,14 +13,10 @@ import org.springframework.data.mongodb.core.mapping.Field;
 import java.time.Instant;
 import java.util.List;
 
-/**
- * User Entity
- * 
- * Supports both local authentication and external identity providers (OIDC/LDAP).
- * Password hash uses BCrypt with cost ≥12 or Argon2id for maximum security.
- */
 @Data
 @Builder
+@NoArgsConstructor
+@AllArgsConstructor
 @Document(collection = "users")
 public class User {
 
@@ -31,6 +29,12 @@ public class User {
     @Indexed(unique = true)
     @Field("email")
     private String email;
+
+    @Field("fullName")
+    private String fullName;
+
+    @Field("department")
+    private String department;
 
     /**
      * BCrypt/Argon2id hashed password (cost ≥12)

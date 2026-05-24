@@ -12,6 +12,8 @@ import org.springframework.data.mongodb.core.mapping.Field;
 import java.time.Instant;
 import java.util.List;
 
+import com.datashield.ai.model.DetectedDataItem;
+
 /**
  * Interaction - Audit Log Entity (IMMUTABLE, append-only)
  * 
@@ -32,6 +34,11 @@ public class Interaction {
 
     @Id
     private String id;
+
+    /** UUID sent by the client to group turns of the same conversation. */
+    @Indexed
+    @Field("conversationId")
+    private String conversationId;
 
     @Indexed
     @Field("userId")
@@ -70,9 +77,13 @@ public class Interaction {
     @Field("blockedReasons")
     private List<String> blockedReasons;
 
-    /** All patterns detected (masked or blocked), e.g. EMAIL, CREDIT_CARD */
+    /** Pattern names detected — flat list used for filtering (Issue #8). */
     @Field("detectedPatterns")
     private List<String> detectedPatterns;
+
+    /** Structured detections with position and action — used for forensic view (Issue #11). */
+    @Field("detectedData")
+    private List<DetectedDataItem> detectedData;
 
     /**
      * Total processing time in milliseconds (sanitization + LLM call)

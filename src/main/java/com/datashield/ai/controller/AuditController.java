@@ -15,6 +15,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.time.Instant;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -44,6 +45,15 @@ public class AuditController {
      * 
      * Performance: Must render <1.5-2 seconds for 50k records with 3 filters
      */
+    /**
+     * GET /api/v1/audit?page=0&size=20&userId=x&blocked=true&keyword=x
+     *                  &startDate=x&endDate=x&types=EMAIL,CREDIT_CARD&sortBy=timestamp&sortDir=desc
+     *
+     * @param types comma-separated list of sensitive data categories to filter by (OR logic).
+     *              Valid values match the pattern names stored in detectedPatterns
+     *              (e.g. EMAIL, CREDIT_CARD, PHONE, DNI, IP_ADDRESS, CREDENTIAL).
+     *              Returns 400 if an unrecognized type is supplied.
+     */
     @GetMapping
     public ResponseEntity<Page<Interaction>> getAuditLogs(
             @RequestParam(defaultValue = "0") int page,
@@ -53,21 +63,16 @@ public class AuditController {
             @RequestParam(required = false) String keyword,
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) Instant startDate,
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) Instant endDate,
+            @RequestParam(required = false) List<String> types,
             @RequestParam(defaultValue = "timestamp") String sortBy,
             @RequestParam(defaultValue = "desc") String sortDir) {
-        
+
         Sort sort = sortDir.equalsIgnoreCase("asc") ? Sort.by(sortBy).ascending() : Sort.by(sortBy).descending();
-        Pageable pageable = PageRequest.of(page, size, sort);
-        
-        Page<Interaction> interactions;
-        
-        if (userId != null || blocked != null || startDate != null || endDate != null || keyword != null) {
-            interactions = interactionRepository.findByFilters(
-                userId, blocked, keyword, startDate, endDate, pageable);
-        } else {
-            interactions = interactionRepository.findAll(pageable);
-        }
-        
+        Pageable pageable = PageRequest.of(page, Math.min(size, 50), sort);
+
+        Page<Interaction> interactions = interactionRepository.findByDynamicFilters(
+                userId, blocked, keyword, startDate, endDate, types, pageable);
+
         log.debug("Audit logs retrieved: {} records, page={}", interactions.getTotalElements(), page);
         return ResponseEntity.ok(interactions);
     }

@@ -1,6 +1,6 @@
 package com.datashield.ai.service;
 
-import com.datashield.ai.model.Policy;
+import com.datashield.ai.model.DetectedDataItem;
 import lombok.Builder;
 import lombok.Data;
 
@@ -21,10 +21,11 @@ public class SanitizationResult {
      */
     private String sanitizedPrompt;
 
-    /**
-     * List of detected sensitive patterns
-     */
+    /** Pattern names detected (legacy flat list — kept for backward compat). */
     private List<String> detectedPatterns;
+
+    /** Structured detections with position and action info (Issue #11). */
+    private List<DetectedDataItem> detectedData;
 
     /**
      * Whether the prompt should be blocked

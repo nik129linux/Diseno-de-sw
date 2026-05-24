@@ -1,6 +1,7 @@
 package com.datashield.ai.service;
 
 import com.datashield.ai.exception.SanitizationException;
+import com.datashield.ai.model.DetectedDataItem;
 import com.datashield.ai.model.Policy;
 import com.github.benmanes.caffeine.cache.Cache;
 import com.github.benmanes.caffeine.cache.Caffeine;
@@ -75,43 +76,43 @@ public class SanitizationService {
         try {
             String sanitizedPrompt = prompt;
             List<String> detectedPatterns = new ArrayList<>();
+            List<DetectedDataItem> detectedData = new ArrayList<>();
             List<String> blockingReasons = new ArrayList<>();
             boolean blocked = false;
 
             // Apply each enabled pattern from the policy
             for (Policy.RegexPattern regexPattern : policy.getRegexPatterns()) {
-                if (!regexPattern.isEnabled()) {
-                    continue;
-                }
+                if (!regexPattern.isEnabled()) continue;
+                if (regexPattern.getPattern() == null || regexPattern.getPattern().isBlank()) continue;
 
-                if (regexPattern.getPattern() == null || regexPattern.getPattern().isBlank()) {
-                    continue;
-                }
-
-                // Get or compile pattern from cache
                 String cacheKey = policy.getId() + "_" + regexPattern.getName();
-                Pattern compiledPattern = patternCache.get(cacheKey, k -> 
-                    Pattern.compile(regexPattern.getPattern(), Pattern.CASE_INSENSITIVE)
-                );
+                Pattern compiledPattern = patternCache.get(cacheKey, k ->
+                        Pattern.compile(regexPattern.getPattern(), Pattern.CASE_INSENSITIVE));
 
-                // Check for matches
+                // Scan against the *current* (possibly already masked) prompt so positions stay valid
                 Matcher matcher = compiledPattern.matcher(sanitizedPrompt);
-                if (matcher.find()) {
+                boolean found = false;
+                while (matcher.find()) {
+                    found = true;
+                    detectedData.add(DetectedDataItem.builder()
+                            .type(regexPattern.getName())
+                            .startPos(matcher.start())
+                            .endPos(matcher.end())
+                            .action(regexPattern.getAction())
+                            .build());
+                }
+
+                if (found) {
                     detectedPatterns.add(regexPattern.getName());
 
-                    // Apply action based on pattern configuration
                     switch (regexPattern.getAction()) {
-                        case "BLOCK":
+                        case "BLOCK" -> {
                             blocked = true;
                             blockingReasons.add(regexPattern.getName().toUpperCase() + "_DETECTED");
-                            break;
-                        case "MASK":
-                            sanitizedPrompt = matcher.replaceAll("[REDACTED_" + regexPattern.getName() + "]");
-                            break;
-                        case "WARN":
-                            // Log warning but don't block or mask
-                            log.warn("Sensitive pattern detected but allowed: {}", regexPattern.getName());
-                            break;
+                        }
+                        case "MASK" -> sanitizedPrompt = compiledPattern.matcher(sanitizedPrompt)
+                                .replaceAll("[REDACTED_" + regexPattern.getName() + "]");
+                        case "WARN" -> log.warn("Sensitive pattern detected but allowed: {}", regexPattern.getName());
                     }
                 }
             }
@@ -138,6 +139,7 @@ public class SanitizationService {
             return SanitizationResult.builder()
                     .sanitizedPrompt(sanitizedPrompt)
                     .detectedPatterns(detectedPatterns)
+                    .detectedData(detectedData)
                     .blocked(blocked)
                     .blockingReasons(blockingReasons)
                     .processingTimeMs(processingTime)
