@@ -5,9 +5,12 @@ export const authApi = {
     const response = await apiClient.post('/auth/login', credentials);
     return response.data;
   },
-  // JWT is stateless — logout is client-side only (clear sessionStorage)
-  logout: () => {
-    sessionStorage.clear();
+  logout: async () => {
+    try {
+      await apiClient.post('/auth/logout');
+    } finally {
+      sessionStorage.clear();
+    }
   },
   refresh: async () => {
     const response = await apiClient.post('/auth/refresh');

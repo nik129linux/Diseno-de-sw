@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Send, Loader2, ShieldAlert, ShieldCheck, MessageSquare, AlertCircle, Trash2 } from 'lucide-react';
-import { promptApi } from '../api/promptApi';
+import { promptApi, resetConversationId } from '../api/promptApi';
 import { cn } from '../lib/utils';
 
 interface Message {
@@ -78,7 +78,7 @@ const Chat: React.FC = () => {
         </div>
         {messages.length > 0 && (
           <button
-            onClick={() => setMessages([])}
+            onClick={() => { setMessages([]); resetConversationId(); }}
             className="flex items-center gap-1.5 text-xs text-muted-foreground hover:text-destructive transition-colors"
           >
             <Trash2 size={13} /> Clear
