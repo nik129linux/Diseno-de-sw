@@ -74,12 +74,13 @@ public class SecurityConfig {
                 .requestMatchers("/api/v1/auth/**").permitAll()
                 .requestMatchers("/api/v1/health").permitAll()
                 .requestMatchers("/actuator/**").permitAll()
+                .requestMatchers("/swagger-ui/**", "/swagger-ui.html", "/v3/api-docs/**").permitAll()
                 
                 // Chat endpoints (prompt + history) — both employees and admins
                 .requestMatchers("/api/v1/chat/**").hasAnyRole("EMPLOYEE", "ADMIN")
                 
                 // Admin endpoints
-                .requestMatchers("/api/v1/audit/**").hasRole("ADMIN")
+                .requestMatchers("/api/v1/audit/**", "/api/v1/audit/export/**").hasRole("ADMIN")
                 .requestMatchers("/api/v1/policies/**").hasRole("ADMIN")
                 .requestMatchers("/api/v1/users/**").hasRole("ADMIN")
                 .requestMatchers("/api/v1/notifications/**").hasRole("ADMIN")

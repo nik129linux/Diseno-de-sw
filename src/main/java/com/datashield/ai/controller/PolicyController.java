@@ -1,15 +1,18 @@
 package com.datashield.ai.controller;
 
 import com.datashield.ai.model.Policy;
+import com.datashield.ai.service.LlmConfigService;
 import com.datashield.ai.service.PolicyService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
 
 /**
  * Policy Controller
@@ -22,6 +25,7 @@ import java.util.List;
 public class PolicyController {
 
     private final PolicyService policyService;
+    private final LlmConfigService llmConfigService;
 
     /**
      * Get all enabled policies
@@ -67,5 +71,38 @@ public class PolicyController {
     public ResponseEntity<Void> deletePolicy(@PathVariable String id) {
         policyService.deletePolicy(id);
         return ResponseEntity.noContent().build();
+    }
+
+    // ── LLM Connection Configuration (Issue #15) ──────────────────────────────
+
+    /**
+     * GET /api/v1/policies/llm-config
+     * Returns current LLM connection config with masked API key.
+     */
+    @GetMapping("/llm-config")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<Map<String, Object>> getLlmConfig() {
+        return ResponseEntity.ok(llmConfigService.getMasked());
+    }
+
+    /**
+     * PUT /api/v1/policies/llm-config
+     * Updates LLM connection settings. Changes apply within 30s without restart.
+     * Body: { baseUrl, model, apiKey (optional), timeoutSeconds }
+     */
+    @PutMapping("/llm-config")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<Map<String, Object>> updateLlmConfig(
+            @RequestBody Map<String, Object> body,
+            @AuthenticationPrincipal UserDetails userDetails) {
+
+        llmConfigService.update(
+                (String) body.get("baseUrl"),
+                (String) body.get("model"),
+                (String) body.get("apiKey"),
+                body.get("timeoutSeconds") != null ? ((Number) body.get("timeoutSeconds")).intValue() : 0,
+                userDetails.getUsername());
+
+        return ResponseEntity.ok(llmConfigService.getMasked());
     }
 }

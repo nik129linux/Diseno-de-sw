@@ -1,14 +1,21 @@
 package com.datashield.ai.controller;
 
+import com.datashield.ai.model.NotificationConfig;
+import com.datashield.ai.repository.NotificationConfigRepository;
 import com.datashield.ai.service.EmailService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.Instant;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -31,6 +38,7 @@ import java.util.Map;
 public class NotificationController {
 
     private final EmailService emailService;
+    private final NotificationConfigRepository notificationConfigRepository;
 
     /**
      * Send test email to verify SMTP configuration
@@ -79,5 +87,35 @@ public class NotificationController {
         status.put("templatesLoaded", true);
         
         return ResponseEntity.ok(status);
+    }
+
+    // ── Alert Config (Issue #16) ───────────────────────────────────────────────
+
+    /**
+     * GET /api/v1/notifications/config — current email alert rules.
+     */
+    @GetMapping("/config")
+    public ResponseEntity<NotificationConfig> getConfig() {
+        NotificationConfig cfg = notificationConfigRepository.findById("default")
+                .orElse(NotificationConfig.builder().id("default").rules(new ArrayList<>()).build());
+        return ResponseEntity.ok(cfg);
+    }
+
+    /**
+     * PUT /api/v1/notifications/config — replace full list of alert rules.
+     * Body: { rules: [{ email, alertTypes, frequency, minSeverity, active }] }
+     */
+    @PutMapping("/config")
+    public ResponseEntity<NotificationConfig> updateConfig(
+            @RequestBody NotificationConfig config,
+            @AuthenticationPrincipal UserDetails userDetails) {
+
+        config.setId("default");
+        config.setUpdatedAt(Instant.now());
+        config.setUpdatedBy(userDetails.getUsername());
+        NotificationConfig saved = notificationConfigRepository.save(config);
+        log.info("Notification config updated by={} rules={}", userDetails.getUsername(),
+                saved.getRules() != null ? saved.getRules().size() : 0);
+        return ResponseEntity.ok(saved);
     }
 }

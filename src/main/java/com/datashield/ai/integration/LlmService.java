@@ -19,15 +19,10 @@ public class LlmService {
 
     private final MockLlmService mockLlmService;
     private final RestTemplate restTemplate;
+    private final com.datashield.ai.service.LlmConfigService llmConfigService;
 
     @Value("${llm.provider:ollama}")
     private String llmProvider;
-
-    @Value("${llm.ollama.base-url:http://host.docker.internal:11434/v1}")
-    private String ollamaBaseUrl;
-
-    @Value("${llm.ollama.model:gemma4:31b-cloud}")
-    private String ollamaModel;
 
     @CircuitBreaker(name = "llmService", fallbackMethod = "fallbackResponseWithHistory")
     @Retry(name = "llmService")
@@ -37,7 +32,9 @@ public class LlmService {
         }
 
         if ("ollama".equalsIgnoreCase(llmProvider)) {
-            return callOpenAiCompatible(ollamaBaseUrl, ollamaModel, null, sanitizedPrompt, history);
+            var cfg = llmConfigService.getEffectiveConfig();
+            return callOpenAiCompatible(cfg.getBaseUrl(), cfg.getModel(),
+                    cfg.getApiKey(), sanitizedPrompt, history);
         }
 
         log.warn("Unknown LLM provider '{}', falling back to mock", llmProvider);

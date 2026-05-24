@@ -80,7 +80,7 @@ public class AuthController {
     public ResponseEntity<LoginResponse> refreshToken(@RequestBody Map<String, String> request) {
         String refreshToken = request.get("refreshToken");
 
-        if (!jwtTokenProvider.validateToken(refreshToken)) {
+        if (!jwtTokenProvider.validateToken(refreshToken) || tokenBlacklistService.isRevoked(refreshToken)) {
             return ResponseEntity.badRequest().build();
         }
 

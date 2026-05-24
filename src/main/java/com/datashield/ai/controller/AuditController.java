@@ -119,10 +119,16 @@ public class AuditController {
         // Block rate
         double blockRate = totalInteractions > 0 ? (double) blockedCount / totalInteractions * 100 : 0;
         
+        // Top blocked patterns (for pie/donut chart)
+        var topPatterns = interactionRepository.findTopBlockedPatterns();
+
         stats.put("totalInteractions", totalInteractions);
         stats.put("blockedCount", blockedCount);
         stats.put("blockRate", String.format("%.2f%%", blockRate));
         stats.put("avgLatency", Math.round(avgLatency));
+        stats.put("topPatterns", topPatterns.stream()
+                .map(p -> Map.of("type", p.getId(), "count", p.getCount()))
+                .toList());
         stats.put("periodStart", startDate != null ? startDate.toString() : "all-time");
         stats.put("periodEnd", endDate != null ? endDate.toString() : "now");
         

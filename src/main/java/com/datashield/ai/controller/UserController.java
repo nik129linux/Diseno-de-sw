@@ -44,6 +44,21 @@ public class UserController {
     }
 
     /**
+     * GET /api/v1/users/list?search=juan
+     * Lightweight endpoint for autocomplete dropdowns (audit filter by user, Issue #9).
+     */
+    @GetMapping("/list")
+    public ResponseEntity<Page<UserDto>> getUserList(
+            @RequestParam(required = false) String search,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size) {
+        Page<UserDto> users = userService.listUsers(
+                search, null, true,
+                PageRequest.of(page, Math.min(size, 20), Sort.by("email").ascending()));
+        return ResponseEntity.ok(users);
+    }
+
+    /**
      * POST /api/v1/users
      * Creates a user with a randomly generated password.
      */
