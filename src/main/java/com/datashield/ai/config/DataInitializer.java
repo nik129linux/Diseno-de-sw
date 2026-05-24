@@ -1,11 +1,14 @@
 package com.datashield.ai.config;
 
 import com.datashield.ai.model.Policy;
+import com.datashield.ai.model.User;
 import com.datashield.ai.repository.PolicyRepository;
+import com.datashield.ai.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.ApplicationArguments;
 import org.springframework.boot.ApplicationRunner;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 
 import java.time.Instant;
@@ -21,9 +24,45 @@ import java.util.List;
 public class DataInitializer implements ApplicationRunner {
 
     private final PolicyRepository policyRepository;
+    private final UserRepository userRepository;
+    private final PasswordEncoder passwordEncoder;
 
     @Override
     public void run(ApplicationArguments args) {
+        seedUsers();
+        seedPolicy();
+    }
+
+    private void seedUsers() {
+        if (userRepository.existsByEmailIgnoreCase("admin@datashield.ai")) {
+            log.info("Seed users already exist — skipping user seed");
+            return;
+        }
+        String hash = passwordEncoder.encode("Admin@123!");
+        userRepository.saveAll(List.of(
+            User.builder()
+                .email("admin@datashield.ai")
+                .fullName("System Admin")
+                .department("IT Security")
+                .passwordHash(hash)
+                .roles(List.of("ROLE_ADMIN"))
+                .active(true)
+                .createdAt(Instant.now())
+                .build(),
+            User.builder()
+                .email("employee@datashield.ai")
+                .fullName("Demo Employee")
+                .department("Operations")
+                .passwordHash(hash)
+                .roles(List.of("ROLE_EMPLOYEE"))
+                .active(true)
+                .createdAt(Instant.now())
+                .build()
+        ));
+        log.info("Seeded default users: admin@datashield.ai, employee@datashield.ai");
+    }
+
+    private void seedPolicy() {
         if (!policyRepository.findByEnabledTrue().isEmpty()) {
             log.info("Active policy already exists — skipping default seed");
             return;
